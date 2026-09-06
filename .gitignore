@@ -1,0 +1,36 @@
+# Build
+build/
+cmake-build-*/
+out/
+
+# Compiled binaries
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# IDE/editor
+.vscode/
+.idea/
+
+.cmake/
+.kateproject.build
+web_build.txt
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Debugging
+*.gdb
+*.dSYM/
