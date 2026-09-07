@@ -18,9 +18,9 @@
 namespace project {
 
     struct dataGPU {
-        buffer::data<mesh::data> meshes;
-        buffer::data<shader::data> shaders;
-        buffer::data<texture::data> textures;
+        buffer<mesh> meshes;
+        buffer<shader> shaders;
+        buffer<texture> textures;
     };
 
     struct dataCPU {
@@ -30,7 +30,7 @@ namespace project {
     void initResourcesGPU(dataGPU& gpuData);
     int initResourcesCPU(dataCPU& cpuData);
 
-    void update(dataCPU& cpuData, gltime::data& time);
+    void update(dataCPU& cpuData, gltime& time);
     void loop(dataCPU& cpuData, dataGPU& gpuData);
     void terminate();
 }

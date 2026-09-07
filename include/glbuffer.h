@@ -6,52 +6,60 @@
 #include "gltools.h"
 #include "glmath.h"
 
-namespace bufferGPU {
+class bufferGPU {
 
-    struct data {
-        GLuint id;
-        GLenum target;
+public:
+    bufferGPU(GLenum target) : target(target) {
 
-        data (GLenum target) : target(target) {
+        glGenBuffers(1, &this->id);
+    }
 
-            glGenBuffers(1, &this->id);
-        }
+    ~bufferGPU() {
 
-        ~data() {
+        glDeleteBuffers(1, &id);
+    }
 
-            glDeleteBuffers(1, &id);
-        }
-    };
-    void bind(data& buffer);
-    void upload(data& buffer, const void* data, size_t size, GLenum usage);
+    void bind();
+    void upload(const void* data, size_t size, GLenum usage);
+
+private:
+    GLuint id;
+    GLenum target;
+
 };
 
-namespace buffer {
+template<typename TYPE>
+class buffer {
 
-    template<typename TYPE>
-    struct data {
-        std::vector<TYPE> elements;
-    };
-
-    template<typename TYPE, typename... ARGS>
-    inline void emplace(data<TYPE>& buffer, ARGS&&... args) {
-        buffer.elements.emplace_back(std::forward<ARGS>(args)...);
+public:
+    template<typename... ARGS>
+    void emplace(ARGS&&... args) {
+        this->elements.emplace_back(std::forward<ARGS>(args)...);
     }
 
-    template<typename TYPE>
-    inline const TYPE& get(const data<TYPE>& buffer, size_t index) {
-        return buffer.elements.at(index);
+    TYPE& get(const size_t index) {
+        return this->elements.at(index);
     }
 
-    template<typename TYPE>
-    inline const size_t size(const data<TYPE>& buffer) {
-        return buffer.elements.size();
+    const TYPE& get(const size_t index) const {
+        return this->elements.at(index);
     }
 
-    template<typename TYPE>
-    inline const TYPE* elementsData(const data<TYPE>& buffer) {
-        return buffer.elements.data();
+    const size_t size() const {
+        return this->elements.size();
     }
-}
+
+    const TYPE* getElementsData() const {
+        return this->elements.data();
+    }
+
+    void setElementsData(const std::vector<TYPE> elements) {
+        this->elements = elements;
+    }
+
+private:
+    std::vector<TYPE> elements;
+
+};
 
 #endif

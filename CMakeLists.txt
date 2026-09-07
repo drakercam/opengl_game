@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME}
     src/glshader.cpp
     src/gltools.cpp
     src/gltexture.cpp
+    src/glmodel.cpp
     src/project.cpp
     thirdparty/glad/src/glad.c
     thirdparty/stb_image/stb_image_definition.cpp

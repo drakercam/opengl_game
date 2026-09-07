@@ -3,21 +3,19 @@
 
 #include <GLFW/glfw3.h>
 
-namespace gltime {
+class gltime {
 
-    struct data {
-        float last;
-        float delta;
-        float total;
+    public:
+        void update(void);
 
-        data() {
-            last = 0.0f;
-            delta = 0.0f;
-            total = 0.0f;
-        }
-    };
+        const float getDelta() const { return delta; }
+        const float getLast() const { return last; }
+        const float getTotal() const { return total; }
 
-    void update(data& t);
-}
+    private:
+        float last = 0.0f;
+        float delta = 0.0f;
+        float total = 0.0f;
+};
 
 #endif

@@ -1,12 +1,12 @@
 #include "glbuffer.h"
 
-void bufferGPU::bind(bufferGPU::data& buffer) {
+void bufferGPU::bind() {
 
-    glBindBuffer(buffer.target, buffer.id);
+    glBindBuffer(this->target, this->id);
 }
 
-void bufferGPU::upload(bufferGPU::data& buffer, const void* data, size_t size, GLenum usage) {
+void bufferGPU::upload(const void* data, size_t size, GLenum usage) {
 
-    bind(buffer);
-    glBufferData(buffer.target, size, data, usage);
+    bind();
+    glBufferData(this->target, size, data, usage);
 }

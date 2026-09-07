@@ -5,80 +5,80 @@ void camera::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
     glfwGetCursorPos(window, &mX, &mY);
 }
 
-void camera::update(mat4& view, camera::data& cam, gltime::data t) {
-    cam.front.x = cos(cam.pitch) *  sin(cam.yaw);
-    cam.front.y = sin(cam.pitch);
-    cam.front.z = -cos(cam.pitch) * cos(cam.yaw);
+void camera::update(mat4& view, gltime t) {
+    this->front.x = cos(this->pitch) *  sin(this->yaw);
+    this->front.y = sin(this->pitch);
+    this->front.z = -cos(this->pitch) * cos(this->yaw);
 
-    cam.front = vec3::normalize(cam.front);
-    cam.right = vec3::normalize(vec3::cross(cam.front, cam.worldUp));
-    cam.up = vec3::normalize(vec3::cross(cam.right, cam.front));
+    this->front = vec3::normalize(this->front);
+    this->right = vec3::normalize(vec3::cross(this->front, this->worldUp));
+    this->up = vec3::normalize(vec3::cross(this->right, this->front));
 
     mat4::identity(view);
     mat4::lookAt(view,
-                 cam.position,
-                 cam.position + cam.front,
-                 cam.up
+                 this->position,
+                 this->position + this->front,
+                 this->up
     );
 }
 
-void camera::input(GLFWwindow* window, camera::data& cam, gltime::data& t) {
+void camera::input(GLFWwindow* window, gltime& t) {
 
     // KEYBOARD
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cam.position += cam.front * cam.speed;
+        this->position += this->front * this->speed;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cam.position -= cam.front * cam.speed;
+        this->position -= this->front * this->speed;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cam.position -= cam.right * cam.speed;
+        this->position -= this->right * this->speed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cam.position += cam.right * cam.speed;
+        this->position += this->right * this->speed;
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        cam.yaw -= cam.rotationSpeed * t.delta;
+        this->yaw -= this->rotationSpeed * t.getDelta();
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        cam.yaw += cam.rotationSpeed * t.delta;
+        this->yaw += this->rotationSpeed * t.getDelta();
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        cam.pitch += cam.rotationSpeed * t.delta;
+        this->pitch += this->rotationSpeed * t.getDelta();
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        cam.pitch -= cam.rotationSpeed * t.delta;
+        this->pitch -= this->rotationSpeed * t.getDelta();
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        cam.position.y += 1.0f * t.delta;
+        this->position.y += 1.0f * t.getDelta();
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        cam.position.y -= 1.0f * t.delta;
+        this->position.y -= 1.0f * t.getDelta();
 }
 
-void camera::inputMouse(GLFWwindow* window, camera::data& cam, GLboolean constrainPitch) {
+void camera::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
 
     double mouseX, mouseY;
 
     camera::getMouseCursorPos(window, mouseX, mouseY);
 
-    if (cam.firstMouse) {
+    if (this->firstMouse) {
 
-        cam.lastMouseX = mouseX;
-        cam.lastMouseY = mouseY;
-        cam.firstMouse = false;
+        this->lastMouseX = mouseX;
+        this->lastMouseY = mouseY;
+        this->firstMouse = false;
         return;
     }
 
-    float xOffset = mouseX - cam.lastMouseX;
-    float yOffset = cam.lastMouseY - mouseY;
+    float xOffset = mouseX - this->lastMouseX;
+    float yOffset = this->lastMouseY - mouseY;
 
-    cam.lastMouseX = mouseX;
-    cam.lastMouseY = mouseY;
+    this->lastMouseX = mouseX;
+    this->lastMouseY = mouseY;
 
-    xOffset *= cam.mouseSensitivity;
-    yOffset *= cam.mouseSensitivity;
+    xOffset *= this->mouseSensitivity;
+    yOffset *= this->mouseSensitivity;
 
-    cam.yaw += xOffset;
-    cam.pitch += yOffset;
+    this->yaw += xOffset;
+    this->pitch += yOffset;
 
     const float pitchLimit = ops::degreesToRadians(89.0f);
 
     if (constrainPitch) {
 
-        if (cam.pitch > pitchLimit) cam.pitch = pitchLimit;
-        if (cam.pitch < -pitchLimit) cam.pitch = -pitchLimit;
+        if (this->pitch > pitchLimit) this->pitch = pitchLimit;
+        if (this->pitch < -pitchLimit) this->pitch = -pitchLimit;
     }
 }

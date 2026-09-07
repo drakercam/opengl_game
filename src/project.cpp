@@ -71,17 +71,17 @@ void project::initResourcesGPU(project::dataGPU& gpuData) {
         22, 23, 20
     };
 
-    buffer::emplace(gpuData.textures, "../resources/GigaChad.jpg");
-    buffer::emplace(gpuData.textures, "../resources/grainy.jpg");
-    std::vector<GLuint> textureRefs = { 0, 1 };
+    gpuData.textures.emplace("../resources/GigaChad.jpg");
+    gpuData.textures.emplace("../resources/grainy.jpg");
+    std::vector<size_t> textureRefs = { 0, 1 };
 
-    buffer::emplace(gpuData.meshes, vertices, indices, textureRefs);
-    buffer::emplace(gpuData.shaders, file::read("../shaders/basic_vertex1.glsl").c_str(), file::read("../shaders/basic_frag1.glsl").c_str());
+    gpuData.meshes.emplace(vertices, indices, textureRefs);
+    gpuData.shaders.emplace(file::read("../shaders/basic_vertex1.glsl").c_str(), file::read("../shaders/basic_frag1.glsl").c_str());
 
-    shader::bind(buffer::get(gpuData.shaders, 0));
-    shader::intLoad(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "tex1"), 0);
-    shader::intLoad(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "tex2"), 1);
-    shader::unbind();
+    gpuData.shaders.get(0).bind();
+    gpuData.shaders.get(0).intLoad(gpuData.shaders.get(0).getUniformLocation("tex1"), 0);
+    gpuData.shaders.get(0).intLoad(gpuData.shaders.get(0).getUniformLocation("tex2"), 1);
+    gpuData.shaders.get(0).unbind();
 }
 
 int project::initResourcesCPU(project::dataCPU& cpuData) {
@@ -114,7 +114,7 @@ int project::initResourcesCPU(project::dataCPU& cpuData) {
     return 0;
 }
 
-void project::update(project::dataCPU& cpuData, gltime::data& time) {
+void project::update(project::dataCPU& cpuData, gltime& time) {
 
     return;
 }
@@ -126,7 +126,7 @@ void project::loop(project::dataCPU& cpuData, project::dataGPU& gpuData) {
     vec3 up{0.0f, 1.0f, 0.0f};
     vec3 cameraDirection{vec3::normalize(cameraPosition - cameraTarget)};
 
-    camera::data cam{cameraPosition, cameraTarget, cameraDirection, {0.0f, 0.0f, -1.0f}, vec3::normalize(vec3::cross(up, cameraDirection)), up};
+    camera camera{cameraPosition, cameraTarget, cameraDirection, {0.0f, 0.0f, -1.0f}, vec3::normalize(vec3::cross(up, cameraDirection)), up};
     gltools::setInputMode(cpuData.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     mat4 modelMatrix, rotation, translation, scale;
@@ -135,23 +135,23 @@ void project::loop(project::dataCPU& cpuData, project::dataGPU& gpuData) {
     mat4::identity(projectionMatrix);
     mat4::getProjection(projectionMatrix, ops::degreesToRadians(45.0f), 1280.0f / 720.0f, 0.1f, 100.0f);
 
-    cube::data cube{{0, 1}};
-    triangle::data triangle{{0, 1}};
-    rectangle::data rectangle{{0, 1}};
+    cube cube{{0, 1}};
+    triangle triangle{{0, 1}};
+    rectangle rectangle{{0, 1}};
 
-    gltime::data t;
-    while (gltools::windowShouldClose(cpuData.window)){
+    gltime time;
+    while (!gltools::windowShouldClose(cpuData.window)){
 
-        gltime::update(t);
+        time.update();
 
         gltools::clearColor({0.5f, 0.0f, 0.7f, 1.0f});
         gltools::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        camera::input(cpuData.window, cam, t);
-        camera::inputMouse(cpuData.window, cam);
-        camera::update(viewMatrix, cam, t);
+        camera.input(cpuData.window, time);
+        camera.inputMouse(cpuData.window);
+        camera.update(viewMatrix, time);
 
-        shader::bind(buffer::get(gpuData.shaders, 0));
+        gpuData.shaders.get(0).bind();
 
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
@@ -160,11 +160,11 @@ void project::loop(project::dataCPU& cpuData, project::dataGPU& gpuData) {
                 mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
                 mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
 
-                shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
-                shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "view"), viewMatrix);
-                shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "projection"), projectionMatrix);
+                gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("model"), modelMatrix);
+                gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("view"), viewMatrix);
+                gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("projection"), projectionMatrix);
 
-                mesh::draw(buffer::get(gpuData.meshes, 0), buffer::get(gpuData.shaders, 0), gpuData.textures);
+                gpuData.meshes.get(0).draw(gpuData.shaders.get(0), gpuData.textures);
             }
         }
 
@@ -173,31 +173,31 @@ void project::loop(project::dataCPU& cpuData, project::dataGPU& gpuData) {
         mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
         mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
 
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "view"), viewMatrix);
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "projection"), projectionMatrix);
+        gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("model"), modelMatrix);
+        gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("view"), viewMatrix);
+        gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("projection"), projectionMatrix);
 
-        cube::draw(cube, buffer::get(gpuData.shaders, 0), gpuData.textures);
+        cube.draw(gpuData.shaders.get(0), gpuData.textures);
 
         mat4::identity(modelMatrix);
         mat4::translate(modelMatrix, {1.0f, 0.0f, -10.0f});
         mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
         mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
 
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
+        gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("model"), modelMatrix);
 
-        triangle::draw(triangle, buffer::get(gpuData.shaders, 0), gpuData.textures);
+        triangle.draw(gpuData.shaders.get(0), gpuData.textures);
 
         mat4::identity(modelMatrix);
         mat4::translate(modelMatrix, {-1.0f, 0.0f, -10.0f});
         mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
         mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
 
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
+        gpuData.shaders.get(0).mat4Load(gpuData.shaders.get(0).getUniformLocation("model"), modelMatrix);
 
-        rectangle::draw(rectangle, buffer::get(gpuData.shaders, 0), gpuData.textures);
+        rectangle.draw(gpuData.shaders.get(0), gpuData.textures);
 
-        shader::unbind();
+        gpuData.shaders.get(0).unbind();
 
         gltools::swapBuffers(cpuData.window);
         gltools::pollEvents();
