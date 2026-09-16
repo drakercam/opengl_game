@@ -1,109 +1,35 @@
 #include "project.h"
+#include "filehandling.h"
 #include "glbuffer.h"
+#include "glcamerathird.h"
 #include "glprimitives.h"
 #include "glshader.h"
 #include "gltools.h"
+#include <GLFW/glfw3.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
-void project::initResourcesGPU(project::dataGPU& gpuData) {
-
-    std::vector<vertex> vertices{
-
-        // Front face (+Z)
-        {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-        {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-        {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-        {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
-
-        // Back face (-Z)
-        {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-        {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-        {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-        {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
-
-        // Left face (-X)
-        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-        {{-0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-        {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-        {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
-        // Right face (+X)
-        {{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-        {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-        {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
-
-        // Top face (+Y)
-        {{-0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-        {{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-        {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-        {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
-
-        // Bottom face (-Y)
-        {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-        {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-        {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-        {{-0.5f, -0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}}
-    };
-
-    std::vector<unsigned int> indices = {
-
-        // Front
-        0, 1, 2,
-        2, 3, 0,
-
-        // Back
-        4, 5, 6,
-        6, 7, 4,
-
-        // Left
-        8, 9, 10,
-        10, 11, 8,
-
-        // Right
-        12, 13, 14,
-        14, 15, 12,
-
-        // Top
-        16, 17, 18,
-        18, 19, 16,
-
-        // Bottom
-        20, 21, 22,
-        22, 23, 20
-    };
-
-    buffer::emplace(gpuData.textures, "../resources/GigaChad.jpg");
-    buffer::emplace(gpuData.textures, "../resources/grainy.jpg");
-    std::vector<GLuint> textureRefs = { 0, 1 };
-
-    buffer::emplace(gpuData.meshes, vertices, indices, textureRefs);
-    buffer::emplace(gpuData.shaders, file::read("../shaders/basic_vertex1.glsl").c_str(), file::read("../shaders/basic_frag1.glsl").c_str());
-
-    shader::bind(buffer::get(gpuData.shaders, 0));
-    shader::intLoad(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "tex1"), 0);
-    shader::intLoad(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "tex2"), 1);
-    shader::unbind();
-}
-
-int project::initResourcesCPU(project::dataCPU& cpuData) {
+int glengine::initialize() {
 
     if (!gltools::loadGLFW()) {
         return -1;
     }
 
     gltools::setVersion(3, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    cpuData.window = gltools::createWindow(1280, 720, "project");
-    if (!cpuData.window){
+    dgl.window = gltools::createWindow(1366, 768, "untitled");
+    if (!dgl.window){
 
         std::cout << "Failed to create glfw window" << std::endl;
         return -1;
     }
 
-    gltools::setContextCurrent(cpuData.window);
+    gltools::setContextCurrent(dgl.window);
 
     if (!gltools::loadGlad()) {
         std::cout << "Couldn't load opengl" << std::endl;
-        project::terminate();
+        glengine::terminate();
         return -1;
     }
 
@@ -111,100 +37,126 @@ int project::initResourcesCPU(project::dataCPU& cpuData) {
 
     // glfwSetCursorPosCallback(cpuData.window, gltools::mouseCallback);
 
+    int four;
+
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    const GLubyte* vendor = glGetString(GL_VENDOR);
+    std::cout << "GL Vendor: " << vendor << std::endl;
+    std::cout << "GL Renderer: " << renderer << std::endl;
+
     return 0;
 }
 
-void project::update(project::dataCPU& cpuData, gltime::data& time) {
+void glengine::initializeResources() {
+
+    gd.shaders.getElements().reserve(10);
+
+    gd.textures.emplace("../resources/cobblestone.jpg");
+    std::vector<size_t> textureRefs = { 0 };
+
+    gd.meshes.getElements().reserve(100);
+
+    gd.shaders.emplace(file::read("../shaders/basic_vertex1.glsl").c_str(), file::read("../shaders/basic_frag1.glsl").c_str());
+
+    gd.models.emplace("../models/penguin/PenguinBaseMesh.obj", gd.meshes, gd.textures);
+
+    gd.cubes.emplace(std::vector<size_t>{0});
+
+    auto& shader = gd.shaders.get(0);
+    shader.bind();
+    shader.intLoad(shader.getUniformLocation("tex1"), 0);
+    shader.unbind();
+
+    // create free type shaders + text
+    gd.shaders.emplace(file::read("../shaders/text_vertex.glsl").c_str(), file::read("../shaders/text_frag.glsl").c_str());
+
+    font yellowBanana = initializeTextRenderResources();
+    yellowBanana.shaderRef = 1;
+    gd.fonts.emplace(yellowBanana);
+}
+
+void glengine::update(gltime& time) {
 
     return;
 }
 
-void project::loop(project::dataCPU& cpuData, project::dataGPU& gpuData) {
+void glengine::run() {
 
     vec3 cameraPosition{0.0f, 0.0f, 3.0f};
-    vec3 cameraTarget{0.0f, 0.0f, 0.0f};
+    vec3 cameraTarget{0.0f, 1.0f, 0.0f};
     vec3 up{0.0f, 1.0f, 0.0f};
     vec3 cameraDirection{vec3::normalize(cameraPosition - cameraTarget)};
 
-    camera::data cam{cameraPosition, cameraTarget, cameraDirection, {0.0f, 0.0f, -1.0f}, vec3::normalize(vec3::cross(up, cameraDirection)), up};
-    gltools::setInputMode(cpuData.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    camerathird camera{cameraPosition, cameraTarget, cameraDirection, {0.0f, 0.0f, -1.0f}, vec3::normalize(vec3::cross(up, cameraDirection)), up};
+    gltools::setInputMode(dgl.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     mat4 modelMatrix, rotation, translation, scale;
     mat4 viewMatrix, projectionMatrix;
 
     mat4::identity(projectionMatrix);
-    mat4::getProjection(projectionMatrix, ops::degreesToRadians(45.0f), 1280.0f / 720.0f, 0.1f, 100.0f);
+    mat4::getProjection(projectionMatrix, ops::degreesToRadians(45.0f), 1366.0f / 768.0f, 0.1f, 100.0f);
 
-    cube::data cube{{0, 1}};
-    triangle::data triangle{{0, 1}};
-    rectangle::data rectangle{{0, 1}};
+    gltime time;
+    input in;
 
-    gltime::data t;
-    while (gltools::windowShouldClose(cpuData.window)){
+    auto& shader = gd.shaders.get(0);
+    auto& cube = gd.cubes.get(0);
+    // auto& rectangle = gd.rectangles.get(0);
 
-        gltime::update(t);
+    player player{{0.0f, 0.0f, 0.0f}, 0};
 
-        gltools::clearColor({0.5f, 0.0f, 0.7f, 1.0f});
+    // for text rendering
+    mat4 ortho;
+    mat4::identity(ortho);
+    mat4::getOrthographic(ortho, 0.0f, 1366.0f, 0.0f, 768.0f, -1.0f, 1.0f);
+
+    text sample{ 0, "hello world", {50.0f, 50.0f}, 1.0f };
+
+    while (!gltools::windowShouldClose(dgl.window)){
+
+        time.update();
+
+        gltools::clearColor({0.0f, 0.0f, 0.0, 1.0f});
         gltools::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        camera::input(cpuData.window, cam, t);
-        camera::inputMouse(cpuData.window, cam);
-        camera::update(viewMatrix, cam, t);
+        player.update(dgl.window, in, time, camera.getFront(), camera.getRight());
 
-        shader::bind(buffer::get(gpuData.shaders, 0));
+        //camera.inputKeyboard(dgl.window, in, time);
+        camera.inputMouse(dgl.window);
+        camera.setTarget(player.getPosition() + (vec3){0.0f, 0.5f, 0.0f});
+        camera.update(viewMatrix, time);
 
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) {
-                mat4::identity(modelMatrix);
-                mat4::translate(modelMatrix, {float(i * 0.5f - 1.25f), 0.0f, j * 0.5f});
-                mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
-                mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
+        shader.bind();
 
-                shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
-                shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "view"), viewMatrix);
-                shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "projection"), projectionMatrix);
+        shader.mat4Load(shader.getUniformLocation("view"), viewMatrix);
+        shader.mat4Load(shader.getUniformLocation("projection"), projectionMatrix);
 
-                mesh::draw(buffer::get(gpuData.meshes, 0), buffer::get(gpuData.shaders, 0), gpuData.textures);
-            }
-        }
+        player.draw(shader, gd.models, gd.meshes, gd.textures);
 
         mat4::identity(modelMatrix);
-        mat4::translate(modelMatrix, {0.0f, 0.0f, -10.0f});
-        mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
-        mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
+        mat4::translate(modelMatrix, {0.0f, -0.25f, 0.0f});
+        mat4::scale(modelMatrix, {20.0f, 0.5f, 20.0f});
 
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "view"), viewMatrix);
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "projection"), projectionMatrix);
+        shader.mat4Load(shader.getUniformLocation("model"), modelMatrix);
 
-        cube::draw(cube, buffer::get(gpuData.shaders, 0), gpuData.textures);
+        cube.draw(shader, gd.textures);
 
-        mat4::identity(modelMatrix);
-        mat4::translate(modelMatrix, {1.0f, 0.0f, -10.0f});
-        mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
-        mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
+        shader.unbind();
 
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
+        // Text rendering
+        sample.draw(gd.fonts, gd.textures, gd.shaders, dgl.textVAO, dgl.textVBO, ortho);
 
-        triangle::draw(triangle, buffer::get(gpuData.shaders, 0), gpuData.textures);
-
-        mat4::identity(modelMatrix);
-        mat4::translate(modelMatrix, {-1.0f, 0.0f, -10.0f});
-        mat4::rotate(modelMatrix, ops::degreesToRadians(glfwGetTime()*45.0f), {0.0f, 1.0f, 0.0f});
-        mat4::scale(modelMatrix, {0.5f, 0.5f, 0.5f});
-
-        shader::mat4Load(shader::getUniformLocation(buffer::get(gpuData.shaders, 0), "model"), modelMatrix);
-
-        rectangle::draw(rectangle, buffer::get(gpuData.shaders, 0), gpuData.textures);
-
-        shader::unbind();
-
-        gltools::swapBuffers(cpuData.window);
+        gltools::swapBuffers(dgl.window);
         gltools::pollEvents();
     }
 }
 
-void project::terminate() {
+void glengine::terminate() {
 
+    gd.clear();
+
+    glfwDestroyWindow(dgl.window);
     glfwTerminate();
+
+    dgl.window = nullptr;
 }

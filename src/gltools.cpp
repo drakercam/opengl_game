@@ -59,7 +59,7 @@ void gltools::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 bool gltools::windowShouldClose(GLFWwindow* window) {
-    return !glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(window);
 }
 
 void gltools::clearColor(vec4 color) {

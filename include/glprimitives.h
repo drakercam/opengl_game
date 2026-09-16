@@ -8,224 +8,224 @@
 #include "glbuffer.h"
 #include "glmesh.h"
 
-namespace triangle {
+class triangle {
+public:
+    triangle(const std::vector<size_t>& t) {
 
-    struct data {
-        GLuint VAO = 0;
-        buffer::data<vertex> vertices;
-        buffer::data<unsigned int> textureRefs;
-        bufferGPU::data VBO{GL_ARRAY_BUFFER};
-        bufferGPU::data EBO{GL_ELEMENT_ARRAY_BUFFER};
+        this->textureRefs.setElementsData(t);
 
-        data(const std::vector<unsigned int>& t) {
+        std::vector<vertex> vertices{
 
-            this->textureRefs.elements = t;
+            // Front face (+Z)
+            {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {}, {}},
+            {{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {}, {}},
+            {{ 0.0f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}, {}, {}}
+        };
 
-            std::vector<vertex> vertices{
+        this->vertices.setElementsData(vertices);
+        glGenVertexArrays(1, &this->VAO);
+        glBindVertexArray(this->VAO);
 
-                // Front face (+Z)
-                {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {}, {}},
-                {{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {}, {}},
-                {{ 0.0f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}, {}, {}}
-            };
+        VBO.upload(vertices.data(), vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
 
-            this->vertices.elements = vertices;
-            glGenVertexArrays(1, &this->VAO);
-            glBindVertexArray(this->VAO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
+        glEnableVertexAttribArray(0);
+        // color attribute
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
+        glEnableVertexAttribArray(1);
+        // uv attribute
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
+        glEnableVertexAttribArray(2);
 
-            bufferGPU::upload(VBO, vertices.data(), vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
+        glBindVertexArray(0);
+    }
 
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
-            glEnableVertexAttribArray(0);
-            // color attribute
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
-            glEnableVertexAttribArray(1);
-            // uv attribute
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
-            glEnableVertexAttribArray(2);
+    ~triangle() {
 
-            glBindVertexArray(0);
-        }
+        glDeleteVertexArrays(1, &this->VAO);
+    }
 
-        ~data() {
+    void draw(const shader& s, const buffer<texture>& textures);
+    void drawWireFrame(const shader& s, const buffer<texture>& textures);
 
-            glDeleteVertexArrays(1, &this->VAO);
-        }
-    };
+private:
+    GLuint VAO = 0;
+    buffer<vertex> vertices;
+    buffer<size_t> textureRefs;
+    bufferGPU VBO{GL_ARRAY_BUFFER};
+    bufferGPU EBO{GL_ELEMENT_ARRAY_BUFFER};
+};
+
+class rectangle {
+
+public:
+    rectangle(const std::vector<size_t>& t) {
+
+        this->textureRefs.setElementsData(t);
+
+        std::vector<vertex> vertices{
+
+            // Front face (+Z)
+            {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {}, {}},
+            {{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {}, {}},
+            {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {}, {}}
+        };
+
+        std::vector<unsigned int> indices = {
+            0, 1, 3, 1, 2, 3
+        };
+
+        this->vertices.setElementsData(vertices);
+        this->indices.setElementsData(indices);
+
+        glGenVertexArrays(1, &this->VAO);
+        glBindVertexArray(this->VAO);
+
+        VBO.upload(vertices.data(), vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
+        EBO.upload(indices.data(), sizeof(unsigned int) * indices.size(), GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
+        glEnableVertexAttribArray(0);
+        // color attribute
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
+        glEnableVertexAttribArray(1);
+        // uv attribute
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
+        glEnableVertexAttribArray(2);
+
+        glBindVertexArray(0);
+    }
+
+    ~rectangle() {
+
+        glDeleteVertexArrays(1, &this->VAO);
+    }
+
+    void draw(const shader& s, const buffer<texture>& textures);
+    void drawWireFrame(const shader& s, const buffer<texture>& textures);
 
 
-    void draw(const data& triangle, const shader::data& s, const buffer::data<texture::data>& textures);
-    void drawWireFrame(const data& triangle, const shader::data& s, const buffer::data<texture::data>& textures);
-}
+private:
+    GLuint VAO = 0;
+    buffer<vertex> vertices;
+    buffer<unsigned int> indices;
+    buffer<size_t> textureRefs;
+    bufferGPU VBO{GL_ARRAY_BUFFER};
+    bufferGPU EBO{GL_ELEMENT_ARRAY_BUFFER};
+};
 
-namespace rectangle {
+class cube {
 
-    struct data {
+public:
 
-        GLuint VAO = 0;
-        buffer::data<vertex> vertices;
-        buffer::data<unsigned int> indices;
-        buffer::data<unsigned int> textureRefs;
-        bufferGPU::data VBO{GL_ARRAY_BUFFER};
-        bufferGPU::data EBO{GL_ELEMENT_ARRAY_BUFFER};
+    cube(const std::vector<size_t>& t) {
 
-        data(const std::vector<unsigned int>& t) {
+        this->textureRefs.setElementsData(t);
 
-            this->textureRefs.elements = t;
+        std::vector<vertex> vertices{
 
-            std::vector<vertex> vertices{
+            // Front face (+Z)
+            {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
+            {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
+            {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
 
-                // Front face (+Z)
-                {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {}, {}},
-                {{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {}, {}},
-                {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {}, {}}
-            };
+            // Back face (-Z)
+            {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
+            {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
+            {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
 
-            std::vector<unsigned int> indices = {
-                0, 1, 3, 1, 2, 3
-            };
+            // Left face (-X)
+            {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
+            {{-0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
+            {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
+            // Right face (+X)
+            {{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
+            {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
+            {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
 
-            this->vertices.elements = vertices;
-            this->indices.elements = indices;
+            // Top face (+Y)
+            {{-0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
+            {{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
+            {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
 
-            glGenVertexArrays(1, &this->VAO);
-            glBindVertexArray(this->VAO);
+            // Bottom face (-Y)
+            {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
+            {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
+            {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
+            {{-0.5f, -0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}}
+        };
 
-            bufferGPU::upload(VBO, vertices.data(), vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
-            bufferGPU::upload(EBO, indices.data(), sizeof(unsigned int) * indices.size(), GL_STATIC_DRAW);
+        std::vector<unsigned int> indices = {
 
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
-            glEnableVertexAttribArray(0);
-            // color attribute
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
-            glEnableVertexAttribArray(1);
-            // uv attribute
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
-            glEnableVertexAttribArray(2);
+            // Front
+            0, 1, 2,
+            2, 3, 0,
 
-            glBindVertexArray(0);
-        }
+            // Back
+            4, 5, 6,
+            6, 7, 4,
 
-        ~data() {
+            // Left
+            8, 9, 10,
+            10, 11, 8,
 
-            glDeleteVertexArrays(1, &this->VAO);
-        }
-    };
+            // Right
+            12, 13, 14,
+            14, 15, 12,
 
-    void draw(const data& rect, const shader::data& s, const buffer::data<texture::data>& textures);
-    void drawWireFrame(const data& rect, const shader::data& s, const buffer::data<texture::data>& textures);
-}
+            // Top
+            16, 17, 18,
+            18, 19, 16,
 
-namespace cube {
+            // Bottom
+            20, 21, 22,
+            22, 23, 20
+        };
 
-    struct data {
+        this->vertices.setElementsData(vertices);
+        this->indices.setElementsData(indices);
 
-        GLuint VAO = 0;
-        buffer::data<vertex> vertices;
-        buffer::data<unsigned int> indices;
-        buffer::data<unsigned int> textureRefs;
-        bufferGPU::data VBO{GL_ARRAY_BUFFER};
-        bufferGPU::data EBO{GL_ELEMENT_ARRAY_BUFFER};
+        glGenVertexArrays(1, &this->VAO);
+        glBindVertexArray(this->VAO);
 
-        data(const std::vector<unsigned int>& t) {
+        VBO.upload(vertices.data(), vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
+        EBO.upload(indices.data(), sizeof(unsigned int) * indices.size(), GL_STATIC_DRAW);
 
-            this->textureRefs.elements = t;
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
+        glEnableVertexAttribArray(0);
+        // color attribute
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
+        glEnableVertexAttribArray(1);
+        // uv attribute
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
+        glEnableVertexAttribArray(2);
 
-            std::vector<vertex> vertices{
+        glBindVertexArray(0);
+    }
 
-                // Front face (+Z)
-                {{-0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-                {{ 0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-                {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{-0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
+    ~cube() {
 
-                // Back face (-Z)
-                {{ 0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-                {{-0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-                {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{ 0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
+        glDeleteVertexArrays(1, &this->VAO);
+    }
 
-                // Left face (-X)
-                {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-                {{-0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-                {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
-                // Right face (+X)
-                {{ 0.5f, -0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-                {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-                {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{ 0.5f,  0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
+    void draw(const shader& s, const buffer<texture>& textures);
+    void drawWireFrame(const shader& s, const buffer<texture>& textures);
 
-                // Top face (+Y)
-                {{-0.5f,  0.5f,  0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-                {{ 0.5f,  0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-                {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{-0.5f,  0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}},
 
-                // Bottom face (-Y)
-                {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {}, {}},
-                {{ 0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {}, {}},
-                {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {}, {}},
-                {{-0.5f, -0.5f,  0.5f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {}, {}}
-            };
+private:
+    GLuint VAO = 0;
+    buffer<vertex> vertices;
+    buffer<unsigned int> indices;
+    buffer<size_t> textureRefs;
+    bufferGPU VBO{GL_ARRAY_BUFFER};
+    bufferGPU EBO{GL_ELEMENT_ARRAY_BUFFER};
 
-            std::vector<unsigned int> indices = {
-
-                // Front
-                0, 1, 2,
-                2, 3, 0,
-
-                // Back
-                4, 5, 6,
-                6, 7, 4,
-
-                // Left
-                8, 9, 10,
-                10, 11, 8,
-
-                // Right
-                12, 13, 14,
-                14, 15, 12,
-
-                // Top
-                16, 17, 18,
-                18, 19, 16,
-
-                // Bottom
-                20, 21, 22,
-                22, 23, 20
-            };
-
-            this->vertices.elements = vertices;
-            this->indices.elements = indices;
-
-            glGenVertexArrays(1, &this->VAO);
-            glBindVertexArray(this->VAO);
-
-            bufferGPU::upload(VBO, vertices.data(), vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
-            bufferGPU::upload(EBO, indices.data(), sizeof(unsigned int) * indices.size(), GL_STATIC_DRAW);
-
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
-            glEnableVertexAttribArray(0);
-            // color attribute
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
-            glEnableVertexAttribArray(1);
-            // uv attribute
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
-            glEnableVertexAttribArray(2);
-
-            glBindVertexArray(0);
-        }
-
-        ~data() {
-
-            glDeleteVertexArrays(1, &this->VAO);
-        }
-    };
-
-    void draw(const data& cube, const shader::data& s, const buffer::data<texture::data>& textures);
-    void drawWireFrame(const data& cube, const shader::data& s, const buffer::data<texture::data>& textures);
-}
+};
 
 #endif

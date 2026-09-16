@@ -24,53 +24,56 @@ struct vertex {
     //weights from each bone
     float m_Weights[MAX_BONE_INFLUENCE];
 
-    vertex(vec3 pos, vec3 normal, vec2 uv, vec3 tangent = {}, vec3 bitangent = {})
+    vertex(vec3 pos = {0.0f, 0.0f, 0.0f}, vec3 normal = {0.0f, 0.0f, 0.0f}, vec2 uv = {0.0f, 0.0f}, vec3 tangent = {}, vec3 bitangent = {})
     : pos(pos), normal(normal), uv(uv), tangent(tangent), bitangent(bitangent) {
     }
 };
 
-namespace mesh {
+class mesh {
 
-    struct data {
-        GLuint VAO = 0;
-        buffer::data<vertex> vertices;
-        buffer::data<GLuint> indices;
-        buffer::data<GLuint> textureRefs;
-        bufferGPU::data VBO{GL_ARRAY_BUFFER};
-        bufferGPU::data EBO{GL_ELEMENT_ARRAY_BUFFER};
+public:
+    mesh(const std::vector<vertex>& v, const std::vector<unsigned int>& i, const std::vector<size_t>& t = {}) {
 
-        data(const std::vector<vertex>& v, const std::vector<unsigned int>& i, const std::vector<GLuint>& t = {}) {
+        this->vertices.setElementsData(v);
+        this->indices.setElementsData(i);
+        this->textureRefs.setElementsData(t);
 
-            this->vertices.elements = v;
-            this->indices.elements = i;
-            this->textureRefs.elements = t;
+        // setup mesh
+        glGenVertexArrays(1, &this->VAO);
+        glBindVertexArray(this->VAO);
 
-            // setup mesh
-            glGenVertexArrays(1, &this->VAO);
-            glBindVertexArray(this->VAO);
+        VBO.upload(this->vertices.getElementsData(), this->vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
+        EBO.upload(this->indices.getElementsData(), sizeof(unsigned int) * this->indices.size(), GL_STATIC_DRAW);
 
-            bufferGPU::upload(VBO, buffer::elementsData(this->vertices), buffer::size(this->vertices) * sizeof(vertex), GL_STATIC_DRAW);
-            bufferGPU::upload(EBO, buffer::elementsData(this->indices), sizeof(unsigned int) * buffer::size(this->indices), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
+        glEnableVertexAttribArray(0);
+        // color attribute
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
+        glEnableVertexAttribArray(1);
+        // uv attribute
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
+        glEnableVertexAttribArray(2);
 
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
-            glEnableVertexAttribArray(0);
-            // color attribute
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
-            glEnableVertexAttribArray(1);
-            // uv attribute
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
-            glEnableVertexAttribArray(2);
+        glBindVertexArray(0);
 
-            glBindVertexArray(0);
-        }
+        std::cout << "CREATE mesh VAO=" << VAO << '\n';
+    }
 
-        ~data() {
+    ~mesh() {
+        std::cout << "DESTROY mesh VAO=" << VAO << '\n';
+        glDeleteVertexArrays(1, &this->VAO);
+    }
 
-            glDeleteVertexArrays(1, &this->VAO);
-        }
-    };
+    void draw(const shader& s, const buffer<texture>& textures) const;
 
-    void draw(const data& mesh, const shader::data& s, const buffer::data<texture::data>& textures);
-}
+private:
+    GLuint VAO = 0;
+    buffer<vertex> vertices;
+    buffer<GLuint> indices;
+    buffer<size_t> textureRefs;
+    bufferGPU VBO{GL_ARRAY_BUFFER};
+    bufferGPU EBO{GL_ELEMENT_ARRAY_BUFFER};
+
+};
 
 #endif

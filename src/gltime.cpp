@@ -1,8 +1,8 @@
 #include "gltime.h"
 
-void gltime::update(gltime::data& t) {
+void gltime::update() {
     float now = (float)glfwGetTime();
-    t.delta = now - t.last;
-    t.last = now;
-    t.total += t.delta;
+    this->delta = now - this->last;
+    this->last = now;
+    this->total += this->delta;
 }
