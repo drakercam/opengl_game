@@ -2,9 +2,9 @@
 #include "glbuffer.h"
 #include "glmesh.h"
 
-void model::load(const std::string path, buffer<texture>& textures) {
+void model::load(const std::string path, buffer<mesh>& meshes, buffer<texture>& textures) {
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace); // aiProcess_FlipUVs |
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
@@ -13,28 +13,36 @@ void model::load(const std::string path, buffer<texture>& textures) {
 
     directory = path.substr(0, path.find_last_of('/'));
 
-    processNode(scene->mRootNode, scene, textures);
+    processNode(scene->mRootNode, scene, meshes, textures);
 }
 
-void model::draw(const shader& s, const buffer<texture>& textures) {
+void model::draw(const shader& s, const buffer<mesh>& meshes, const buffer<texture>& textures) {
 
-    for (size_t i = 0; i < meshes.size(); ++i) {
-        meshes.get(i).draw(s, textures);
+    for (size_t i = 0; i < meshRefs.size(); ++i) {
+        meshes.get(meshRefs.get(i)).draw(s, textures);
     }
 }
 
-void model::processNode(aiNode* node, const aiScene* scene, buffer<texture>& textures) {
+void model::processNode(aiNode* node, const aiScene* scene, buffer<mesh>& meshes, buffer<texture>& textures) {
     for (size_t i = 0; i < node->mNumMeshes; ++i) {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        meshes.emplace(processMesh(mesh, scene, textures));
+
+        std::cout
+        << "Processing mesh: "
+        << node->mMeshes[i]
+        << " vertices=" << mesh->mNumVertices
+        << " faces=" << mesh->mNumFaces
+        << '\n';
+
+        processMesh(mesh, scene, meshes, textures);
     }
 
     for (size_t i = 0; i < node->mNumChildren; ++i) {
-        processNode(node->mChildren[i], scene, textures);
+        processNode(node->mChildren[i], scene, meshes, textures);
     }
 }
 
-mesh model::processMesh(aiMesh* m, const aiScene* scene, buffer<texture>& textures) {
+void model::processMesh(aiMesh* m, const aiScene* scene, buffer<mesh>& meshes, buffer<texture>& textures) {
     std::vector<vertex> vertices;
     std::vector<GLuint> indices;
     std::vector<size_t> textureRefs;
@@ -64,15 +72,17 @@ mesh model::processMesh(aiMesh* m, const aiScene* scene, buffer<texture>& textur
             vec.y = m->mTextureCoords[0][i].y;
             vertex.uv = vec;
 
-            v.x = m->mTangents[i].x;
-            v.y = m->mTangents[i].y;
-            v.z = m->mTangents[i].z;
-            vertex.tangent = v;
+            if (m->HasTangentsAndBitangents()) {
+                v.x = m->mTangents[i].x;
+                v.y = m->mTangents[i].y;
+                v.z = m->mTangents[i].z;
+                vertex.tangent = v;
 
-            v.x = m->mBitangents[i].x;
-            v.y = m->mBitangents[i].y;
-            v.z = m->mBitangents[i].z;
-            vertex.bitangent = v;
+                v.x = m->mBitangents[i].x;
+                v.y = m->mBitangents[i].y;
+                v.z = m->mBitangents[i].z;
+                vertex.bitangent = v;
+            }
         }
 
         else {
@@ -90,10 +100,27 @@ mesh model::processMesh(aiMesh* m, const aiScene* scene, buffer<texture>& textur
         }
     }
 
+    std::cout
+    << "Material index: " << m->mMaterialIndex << '\n';
+
     // process materials
     aiMaterial* material = scene->mMaterials[m->mMaterialIndex];
 
+    aiString materialName;
+    material->Get(AI_MATKEY_NAME, materialName);
+
+    std::cout
+    << "Material name: " << materialName.C_Str() << '\n';
+
     // 1. diffuse maps
+    std::cout << "Material texture counts:\n";
+    std::cout << "  diffuse:  "
+    << material->GetTextureCount(aiTextureType_DIFFUSE) << '\n';
+    std::cout << "  specular: "
+    << material->GetTextureCount(aiTextureType_SPECULAR) << '\n';
+    std::cout << "  normal:   "
+    << material->GetTextureCount(aiTextureType_NORMALS) << '\n';
+
     auto diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", textures);
     textureRefs.insert(textureRefs.end(), diffuseMaps.begin(), diffuseMaps.end());
 
@@ -107,7 +134,11 @@ mesh model::processMesh(aiMesh* m, const aiScene* scene, buffer<texture>& textur
     auto heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height", textures);
     textureRefs.insert(textureRefs.end(), heightMaps.begin(), heightMaps.end());
 
-    return mesh(vertices, indices, textureRefs);
+    size_t meshRef = meshes.size();
+
+    meshes.emplace(vertices, indices, textureRefs);
+
+    meshRefs.emplace(meshRef);
 }
 
 std::vector<size_t> model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, buffer<texture>& textures) {
@@ -118,6 +149,7 @@ std::vector<size_t> model::loadMaterialTextures(aiMaterial* mat, aiTextureType t
         mat->GetTexture(type, i, &str);
 
         std::string filename = directory + "/" + str.C_Str();
+        std::cout << "Loading texture: " << filename << '\n';
 
         bool skip = false;
 

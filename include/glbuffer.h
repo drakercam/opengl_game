@@ -49,12 +49,20 @@ public:
         return this->elements.size();
     }
 
+    std::vector<TYPE>& getElements() {
+        return this->elements;
+    }
+
     const TYPE* getElementsData() const {
         return this->elements.data();
     }
 
     void setElementsData(const std::vector<TYPE> elements) {
         this->elements = elements;
+    }
+
+    void clear(void) {
+        this->elements.clear();
     }
 
 private:

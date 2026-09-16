@@ -4,6 +4,8 @@
 
 void mesh::draw(const shader& s, const buffer<texture>& textures) const {
 
+    // std::cout << "DRAW mesh VAO=" << VAO << '\n';
+
     s.setTextures(textures, this->textureRefs);
 
     glBindVertexArray(this->VAO);

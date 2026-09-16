@@ -12,6 +12,10 @@ public:
         load();
     }
 
+    texture(const unsigned char* data, int width, int height) {
+        loadGlyph(data, width, height);
+    }
+
     static void active(int textureUnit);
     void bind(void) const;
     void unbind(void) const;
@@ -34,6 +38,7 @@ private:
     std::string path;
 
     void load();
+    void loadGlyph(const unsigned char* data, int width, int height);
 };
 
 #endif

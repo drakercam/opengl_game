@@ -1,15 +1,16 @@
 #include "project.h"
 
 int main(void) {
-	project::dataCPU gameDataCPU;
-	project::dataGPU gameDataGPU;
+	glengine engine;
 
-	if (project::initResourcesCPU(gameDataCPU) == -1) 	return -1;
-	project::initResourcesGPU(gameDataGPU);
+	if (engine.initialize() == -1)
+		return -1;
 
-	project::loop(gameDataCPU, gameDataGPU);
+	engine.initializeResources();
 
-	project::terminate();
+	engine.run();
+
+	engine.terminate();
 
 	return 0;
 }

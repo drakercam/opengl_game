@@ -55,10 +55,12 @@ public:
         glEnableVertexAttribArray(2);
 
         glBindVertexArray(0);
+
+        std::cout << "CREATE mesh VAO=" << VAO << '\n';
     }
 
     ~mesh() {
-
+        std::cout << "DESTROY mesh VAO=" << VAO << '\n';
         glDeleteVertexArrays(1, &this->VAO);
     }
 

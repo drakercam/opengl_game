@@ -46,11 +46,13 @@ void shader::setTextures(const buffer<texture>& textures, const buffer<size_t>& 
     unsigned int specularNr = 1;
     unsigned int normalNr   = 1;
     unsigned int heightNr   = 1;
+
     for (unsigned int i = 0; i < textureRefs.size(); ++i) {
 
+        auto& textureReference = textureRefs.get(i);
         glActiveTexture(GL_TEXTURE0 + i);
         std::string number;
-        std::string name = textures.get(textureRefs.get(i)).getName();
+        std::string name = textures.get(textureReference).getName();
 
         if      (name == "texture_diffuse")     number = std::to_string(diffuseNr++);
         else if (name == "texture_specular")    number = std::to_string(specularNr++);
@@ -58,6 +60,6 @@ void shader::setTextures(const buffer<texture>& textures, const buffer<size_t>& 
         else if (name == "texture_height")      number = std::to_string(heightNr++);
 
         shader::setTextureUnitToSampler(std::string("material." + name + number).c_str(), i);
-        textures.get(i).bind();
+        textures.get(textureReference).bind();
     }
 }

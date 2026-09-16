@@ -1,14 +1,18 @@
+#ifndef GLCAMERATHIRD_H
+#define GLCAMERATHIRD_H
+
 #ifndef GLCAMERA_H
 #define GLCAMERA_H
 
 #include "glmath.h"
 #include "gltime.h"
+#include "input.h"
 #include <GLFW/glfw3.h>
 
-class camera {
+class camerathird {
 
 public:
-    camera(const vec3 pos, const vec3 target, const vec3 dir, const vec3 front, const vec3 right, const vec3 up) {
+    camerathird(const vec3 pos, const vec3 target, const vec3 dir, const vec3 front, const vec3 right, const vec3 up) {
         this->position = pos;
         this->target = target;
         this->direction = dir;
@@ -21,16 +25,30 @@ public:
         this->speed = 0.05f;
         this->rotationSpeed = 1.5f;
         this->mouseSensitivity = 0.003f;
+
+        this->distance = 5.0f;
     }
 
     void getMouseCursorPos(GLFWwindow* window, double& mX, double& mY);
     void update(mat4& view, gltime t);
-    void input(GLFWwindow* window, gltime& t);
+    void inputKeyboard(GLFWwindow* window, input in, gltime& t);
     void inputMouse(GLFWwindow* window, GLboolean constrainPitch = true);
+
+    void setTarget(const vec3& target) {
+        this->target = target;
+    }
+
+    void setTarget(const vec3&& target) {
+        this->target = target;
+    }
+
+    vec3 getFront() const { return front; }
+    vec3 getRight() const { return right; }
 
 private:
     vec3 position;
-    vec3 target;
+    vec3 target;    // target position
+    float distance; // distance to target
     vec3 direction;
     vec3 front;
     vec3 right;
@@ -48,5 +66,8 @@ private:
     double lastMouseY;
 
 };
+
+#endif
+
 
 #endif

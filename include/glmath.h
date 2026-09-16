@@ -490,9 +490,8 @@ struct mat4 {
         result.m[15] = 0.0f;
     }
 
-    static mat4 getOrthographic(float l, float r, float b, float t, float near, float far) {
+    static void getOrthographic(mat4& result, float l, float r, float b, float t, float near, float far) {
 
-        mat4 result;
         mat4::identity(result);
 
         result.m[0]  = 2.0f / (r - l);
@@ -501,8 +500,6 @@ struct mat4 {
         result.m[12] = -((r + l) / (r - l));
         result.m[13] = -((t + b) / (t - b));
         result.m[14] = -((far + near) / (far - near));
-
-        return result;
     }
 
     static void lookAt(mat4& transform, vec3 eye, vec3 target, vec3 up) {

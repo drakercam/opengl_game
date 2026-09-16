@@ -1,58 +1,65 @@
-#include "glcamera.h"
+#include "glcamerathird.h"
+#include <GLFW/glfw3.h>
 
-void camera::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
+void camerathird::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
 
     glfwGetCursorPos(window, &mX, &mY);
 }
 
-void camera::update(mat4& view, gltime t) {
+void camerathird::update(mat4& view, gltime t) {
+
+    // looking
     this->front.x = cos(this->pitch) *  sin(this->yaw);
     this->front.y = sin(this->pitch);
     this->front.z = -cos(this->pitch) * cos(this->yaw);
 
     this->front = vec3::normalize(this->front);
+
     this->right = vec3::normalize(vec3::cross(this->front, this->worldUp));
+
     this->up = vec3::normalize(vec3::cross(this->right, this->front));
+
+    this->position = this->target - this->front * this->distance;
 
     mat4::identity(view);
     mat4::lookAt(view,
                  this->position,
-                 this->position + this->front,
+                 this->target,
                  this->up
     );
 }
 
-void camera::input(GLFWwindow* window, gltime& t) {
+void camerathird::inputKeyboard(GLFWwindow* window, input in, gltime& t) {
 
     // KEYBOARD
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_W))
         this->position += this->front * this->speed;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_S))
         this->position -= this->front * this->speed;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_A))
         this->position -= this->right * this->speed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_D))
         this->position += this->right * this->speed;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_LEFT))
         this->yaw -= this->rotationSpeed * t.getDelta();
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_RIGHT))
         this->yaw += this->rotationSpeed * t.getDelta();
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_UP))
         this->pitch += this->rotationSpeed * t.getDelta();
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_DOWN))
         this->pitch -= this->rotationSpeed * t.getDelta();
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_SPACE))
         this->position.y += 1.0f * t.getDelta();
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    if (in.isKeyPressed(window, GLFW_KEY_LEFT_SHIFT))
         this->position.y -= 1.0f * t.getDelta();
 }
 
-void camera::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
+void camerathird::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
 
     double mouseX, mouseY;
 
-    camera::getMouseCursorPos(window, mouseX, mouseY);
+    camerathird::getMouseCursorPos(window, mouseX, mouseY);
 
     if (this->firstMouse) {
 

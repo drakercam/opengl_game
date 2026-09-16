@@ -26,11 +26,12 @@ void texture::load() {
     unsigned char* data =
     stbi_load(this->path.c_str(), &width, &height, &numColourChannels, 4);
 
-    // std::cout << "texture: stbi_load returned\n";
-    // std::cout << "width: " << width << '\n';
-    // std::cout << "height: " << height << '\n';
-    // std::cout << "channels: " << numColourChannels << '\n';
-    // std::cout << "data: " << static_cast<void*>(data) << '\n';
+    std::cout
+    << "Texture: " << path
+    << " width=" << width
+    << " height=" << height
+    << " channels=" << numColourChannels
+    << '\n';
 
     if (data) {
         // std::cout << "texture: uploading\n";
@@ -54,10 +55,61 @@ void texture::load() {
         // std::cout << "texture: mipmaps generated\n";
     }
     else {
-        // std::cout << "failed to load::ERROR::TEXTURE" << std::endl;
+        std::cout << "Failed to load texture: "
+        << path << '\n';
+
+        std::cout << "Reason: "
+        << stbi_failure_reason()
+        << '\n';
+
+        return;
     }
 
     stbi_image_free(data);
+}
+
+void texture::loadGlyph(const unsigned char* data, int width, int height) {
+    glGenTextures(1, &this->id);
+
+    glBindTexture(GL_TEXTURE_2D, this->id);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RED,
+        width,
+        height,
+        0,
+        GL_RED,
+        GL_UNSIGNED_BYTE,
+        data
+    );
+
+    glTexParameteri(
+        GL_TEXTURE_2D,
+        GL_TEXTURE_WRAP_S,
+        GL_CLAMP_TO_EDGE
+    );
+
+    glTexParameteri(
+        GL_TEXTURE_2D,
+        GL_TEXTURE_WRAP_T,
+        GL_CLAMP_TO_EDGE
+    );
+
+    glTexParameteri(
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR
+    );
+
+    glTexParameteri(
+        GL_TEXTURE_2D,
+        GL_TEXTURE_MAG_FILTER,
+        GL_LINEAR
+    );
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void texture::active(int textureUnit) {
