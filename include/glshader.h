@@ -72,6 +72,7 @@ public:
     void mat3Load(int location, mat3 value) const;
     void mat4Load(int location, mat4 value) const;
 
+    void setTexture(const buffer<texture>& textures, size_t textureRef, unsigned int textureUnit, const char* sampler) const;
     void setTextures(const buffer<texture>& textures, const buffer<size_t>& textureRefs) const;
 
 private:

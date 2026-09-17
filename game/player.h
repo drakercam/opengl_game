@@ -4,13 +4,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "glmath.h"
-#include "gltime.h"
-#include "gltexture.h"
-#include "glmesh.h"
-#include "glmodel.h"
-#include "glbuffer.h"
-#include "input.h"
+#include "engine.h"
+
+struct aabb {
+    vec3 min;
+    vec3 max;
+};
 
 class player {
 
@@ -33,6 +32,9 @@ private:
     float scale;
 
     size_t modelRef;
+
+    aabb bounds;
+    bool grounded;
 
 };
 

@@ -16,9 +16,10 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LUA REQUIRED lua5.4)
 
 add_executable(${PROJECT_NAME}
-    src/main.cpp
     src/filehandling.cpp
     src/glbuffer.cpp
     src/glcamerafirst.cpp
@@ -30,10 +31,14 @@ add_executable(${PROJECT_NAME}
     src/gltools.cpp
     src/gltexture.cpp
     src/glmodel.cpp
-    src/project.cpp
     src/input.cpp
     src/text.cpp
-    src/player.cpp
+    src/engine.cpp
+
+    game/player.cpp
+    game/project.cpp
+    game/main.cpp
+
     thirdparty/glad/src/glad.c
     thirdparty/stb_image/stb_image_definition.cpp
 )
@@ -41,8 +46,10 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE
     src
     include
+    game
     thirdparty/glad/include
     thirdparty/stb_image
+    ${LUA_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -50,6 +57,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     assimp::assimp
     Freetype::Freetype
+    ${LUA_LIBRARIES}
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

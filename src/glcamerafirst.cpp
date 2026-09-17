@@ -1,12 +1,12 @@
 #include "glcamerafirst.h"
 #include <GLFW/glfw3.h>
 
-void camera::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
+void camerafirst::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
 
     glfwGetCursorPos(window, &mX, &mY);
 }
 
-void camera::update(mat4& view, gltime t) {
+void camerafirst::update(mat4& view, gltime t) {
     this->front.x = cos(this->pitch) *  sin(this->yaw);
     this->front.y = sin(this->pitch);
     this->front.z = -cos(this->pitch) * cos(this->yaw);
@@ -23,37 +23,11 @@ void camera::update(mat4& view, gltime t) {
     );
 }
 
-void camera::inputKeyboard(GLFWwindow* window, input in, gltime& t) {
-
-    // KEYBOARD
-
-    if (in.isKeyPressed(window, GLFW_KEY_W))
-        this->position += this->front * this->speed;
-    if (in.isKeyPressed(window, GLFW_KEY_S))
-        this->position -= this->front * this->speed;
-    if (in.isKeyPressed(window, GLFW_KEY_A))
-        this->position -= this->right * this->speed;
-    if (in.isKeyPressed(window, GLFW_KEY_D))
-        this->position += this->right * this->speed;
-    if (in.isKeyPressed(window, GLFW_KEY_LEFT))
-        this->yaw -= this->rotationSpeed * t.getDelta();
-    if (in.isKeyPressed(window, GLFW_KEY_RIGHT))
-        this->yaw += this->rotationSpeed * t.getDelta();
-    if (in.isKeyPressed(window, GLFW_KEY_UP))
-        this->pitch += this->rotationSpeed * t.getDelta();
-    if (in.isKeyPressed(window, GLFW_KEY_DOWN))
-        this->pitch -= this->rotationSpeed * t.getDelta();
-    if (in.isKeyPressed(window, GLFW_KEY_SPACE))
-        this->position.y += 1.0f * t.getDelta();
-    if (in.isKeyPressed(window, GLFW_KEY_LEFT_SHIFT))
-        this->position.y -= 1.0f * t.getDelta();
-}
-
-void camera::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
+void camerafirst::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
 
     double mouseX, mouseY;
 
-    camera::getMouseCursorPos(window, mouseX, mouseY);
+    camerafirst::getMouseCursorPos(window, mouseX, mouseY);
 
     if (this->firstMouse) {
 

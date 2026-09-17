@@ -32,6 +32,10 @@ void gltools::enable(int setting) {
     glEnable(setting);
 }
 
+void gltools::disable(int setting) {
+    glDisable(setting);
+}
+
 int gltools::maxNumberVertexAttr(void) {
     int nrAttributes;
 

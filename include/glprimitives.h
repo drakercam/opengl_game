@@ -59,7 +59,7 @@ private:
 class rectangle {
 
 public:
-    rectangle(const std::vector<size_t>& t) {
+    rectangle(const std::vector<size_t>& t = {}) {
 
         this->textureRefs.setElementsData(t);
 
@@ -102,8 +102,8 @@ public:
         glDeleteVertexArrays(1, &this->VAO);
     }
 
-    void draw(const shader& s, const buffer<texture>& textures);
-    void drawWireFrame(const shader& s, const buffer<texture>& textures);
+    void draw(const shader& s) const;
+    void drawWireFrame(const shader& s) const;
 
 
 private:
