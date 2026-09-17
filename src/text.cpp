@@ -1,6 +1,6 @@
 #include "text.h"
 
-void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, const buffer<shader>& shaders, GLuint VAO, GLuint VBO, const mat4& projection) {
+void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, const buffer<shader>& shaders, const mat4& projection) {
 
     const auto& font = fonts.get(this->fontRef);
     const auto& shader = shaders.get(font.shaderRef);
@@ -17,7 +17,7 @@ void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, cons
     shader.vec3Load(
     shader.getUniformLocation("textColor"), {1.0f, 1.0f, 1.0f});
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(font.VAO);
 
     float x = position.x;
     float y = position.y;
@@ -54,7 +54,7 @@ void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, cons
 
         textures.get(ch.textureRef).bind();
 
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, font.VBO);
 
         glBufferSubData(
             GL_ARRAY_BUFFER,

@@ -16,6 +16,8 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LUA REQUIRED lua5.4)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
@@ -33,6 +35,7 @@ add_executable(${PROJECT_NAME}
     src/project.cpp
     src/input.cpp
     src/text.cpp
+    src/engine.cpp
     src/player.cpp
     thirdparty/glad/src/glad.c
     thirdparty/stb_image/stb_image_definition.cpp
@@ -43,6 +46,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     include
     thirdparty/glad/include
     thirdparty/stb_image
+    ${LUA_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -50,6 +54,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     assimp::assimp
     Freetype::Freetype
+    ${LUA_LIBRARIES}
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

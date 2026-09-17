@@ -6,10 +6,10 @@
 #include "input.h"
 #include <GLFW/glfw3.h>
 
-class camera {
+class camerafirst {
 
 public:
-    camera(const vec3 pos, const vec3 target, const vec3 dir, const vec3 front, const vec3 right, const vec3 up) {
+    camerafirst(const vec3 pos, const vec3 target, const vec3 dir, const vec3 front, const vec3 right, const vec3 up) {
         this->position = pos;
         this->target = target;
         this->direction = dir;

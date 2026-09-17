@@ -1,16 +1,13 @@
 #include "project.h"
 
 int main(void) {
-	glengine engine;
+	game game;
 
-	if (engine.initialize() == -1)
-		return -1;
+	game.init();
 
-	engine.initializeResources();
+	game.run();
 
-	engine.run();
-
-	engine.terminate();
+	game.terminate();
 
 	return 0;
 }

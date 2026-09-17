@@ -1,86 +1,58 @@
 #include "project.h"
-#include "filehandling.h"
-#include "glbuffer.h"
-#include "glcamerathird.h"
-#include "glprimitives.h"
-#include "glshader.h"
-#include "gltools.h"
 #include <GLFW/glfw3.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-int glengine::initialize() {
+// ---------------------------------------------------------
+// GAME RELATED CODE
+// ---------------------------------------------------------
 
-    if (!gltools::loadGLFW()) {
-        return -1;
-    }
+enum CAMERA_MODE {
+    FIRST_PERSON,
+    THIRD_PERSON
+};
 
-    gltools::setVersion(3, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+void game::init() {
 
-    dgl.window = gltools::createWindow(1366, 768, "untitled");
-    if (!dgl.window){
+    eng.initialize();
 
-        std::cout << "Failed to create glfw window" << std::endl;
-        return -1;
-    }
+    rd.shaders.getElements().reserve(10);
 
-    gltools::setContextCurrent(dgl.window);
-
-    if (!gltools::loadGlad()) {
-        std::cout << "Couldn't load opengl" << std::endl;
-        glengine::terminate();
-        return -1;
-    }
-
-    gltools::enable(GL_DEPTH_TEST);
-
-    // glfwSetCursorPosCallback(cpuData.window, gltools::mouseCallback);
-
-    int four;
-
-    const GLubyte* renderer = glGetString(GL_RENDERER);
-    const GLubyte* vendor = glGetString(GL_VENDOR);
-    std::cout << "GL Vendor: " << vendor << std::endl;
-    std::cout << "GL Renderer: " << renderer << std::endl;
-
-    return 0;
-}
-
-void glengine::initializeResources() {
-
-    gd.shaders.getElements().reserve(10);
-
-    gd.textures.emplace("../resources/cobblestone.jpg");
+    rd.textures.emplace("../resources/cobblestone.jpg");
     std::vector<size_t> textureRefs = { 0 };
 
-    gd.meshes.getElements().reserve(100);
+    rd.meshes.getElements().reserve(100);
 
-    gd.shaders.emplace(file::read("../shaders/basic_vertex1.glsl").c_str(), file::read("../shaders/basic_frag1.glsl").c_str());
+    rd.shaders.emplace(file::read("../shaders/basic_vertex1.glsl").c_str(), file::read("../shaders/basic_frag1.glsl").c_str());
 
-    gd.models.emplace("../models/penguin/PenguinBaseMesh.obj", gd.meshes, gd.textures);
+    rd.models.emplace("../models/penguin/PenguinBaseMesh.obj", rd.meshes, rd.textures);
 
-    gd.cubes.emplace(std::vector<size_t>{0});
+    rd.cubes.emplace(std::vector<size_t>{0});
 
-    auto& shader = gd.shaders.get(0);
+    auto& shader = rd.shaders.get(0);
     shader.bind();
     shader.intLoad(shader.getUniformLocation("tex1"), 0);
     shader.unbind();
 
     // create free type shaders + text
-    gd.shaders.emplace(file::read("../shaders/text_vertex.glsl").c_str(), file::read("../shaders/text_frag.glsl").c_str());
+    rd.shaders.emplace(file::read("../shaders/text_vertex.glsl").c_str(), file::read("../shaders/text_frag.glsl").c_str());
 
-    font yellowBanana = initializeTextRenderResources();
-    yellowBanana.shaderRef = 1;
-    gd.fonts.emplace(yellowBanana);
+    rd.fonts.emplace("../resources/Yellow Banana.otf", 1, eng.getFTLibrary(), rd.textures);
 }
 
-void glengine::update(gltime& time) {
+void game::terminate() {
+
+    rd.clear();
+
+    eng.terminate();
+}
+
+void game::update(gltime& time) {
 
     return;
 }
 
-void glengine::run() {
+void game::run() {
 
     vec3 cameraPosition{0.0f, 0.0f, 3.0f};
     vec3 cameraTarget{0.0f, 1.0f, 0.0f};
@@ -88,7 +60,10 @@ void glengine::run() {
     vec3 cameraDirection{vec3::normalize(cameraPosition - cameraTarget)};
 
     camerathird camera{cameraPosition, cameraTarget, cameraDirection, {0.0f, 0.0f, -1.0f}, vec3::normalize(vec3::cross(up, cameraDirection)), up};
-    gltools::setInputMode(dgl.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    camerafirst camera2{cameraPosition, cameraTarget, cameraDirection, {0.0f, 0.0f, -1.0f}, vec3::normalize(vec3::cross(up, cameraDirection)), up};
+
+    CAMERA_MODE camMode = CAMERA_MODE::THIRD_PERSON;
 
     mat4 modelMatrix, rotation, translation, scale;
     mat4 viewMatrix, projectionMatrix;
@@ -99,8 +74,8 @@ void glengine::run() {
     gltime time;
     input in;
 
-    auto& shader = gd.shaders.get(0);
-    auto& cube = gd.cubes.get(0);
+    auto& shader = rd.shaders.get(0);
+    auto& cube = rd.cubes.get(0);
     // auto& rectangle = gd.rectangles.get(0);
 
     player player{{0.0f, 0.0f, 0.0f}, 0};
@@ -110,28 +85,45 @@ void glengine::run() {
     mat4::identity(ortho);
     mat4::getOrthographic(ortho, 0.0f, 1366.0f, 0.0f, 768.0f, -1.0f, 1.0f);
 
-    text sample{ 0, "hello world", {50.0f, 50.0f}, 1.0f };
+    text cF{"Press F to switch to first person camera", {50.0f, 680.0f}, 0.5f, 0};
+    text cT{"Press T to switch to third person camera", {50.0f, 630.0f}, 0.5f, 0};
 
-    while (!gltools::windowShouldClose(dgl.window)){
+    while (!gltools::windowShouldClose(eng.getWindow())){
 
         time.update();
 
         gltools::clearColor({0.0f, 0.0f, 0.0, 1.0f});
         gltools::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        player.update(dgl.window, in, time, camera.getFront(), camera.getRight());
+        // CAMERA
+        if (in.isKeyPressed(eng.getWindow(), GLFW_KEY_F)) {
+            camMode = CAMERA_MODE::FIRST_PERSON;
+        }
+        else if (in.isKeyPressed(eng.getWindow(), GLFW_KEY_T)) {
+            camMode = CAMERA_MODE::THIRD_PERSON;
+        }
 
-        //camera.inputKeyboard(dgl.window, in, time);
-        camera.inputMouse(dgl.window);
-        camera.setTarget(player.getPosition() + (vec3){0.0f, 0.5f, 0.0f});
-        camera.update(viewMatrix, time);
+        if (camMode == CAMERA_MODE::THIRD_PERSON) {
+            player.update(eng.getWindow(), in, time, camera.getFront(), camera.getRight());
+        }
+
+        if (camMode == CAMERA_MODE::FIRST_PERSON) {
+            camera2.inputMouse(eng.getWindow());
+            camera2.inputKeyboard(eng.getWindow(), in, time);
+            camera2.update(viewMatrix, time);
+        }
+        else if (camMode == CAMERA_MODE::THIRD_PERSON) {
+            camera.inputMouse(eng.getWindow());
+            camera.setTarget(player.getPosition() + (vec3){0.0f, 0.5f, 0.0f});
+            camera.update(viewMatrix, time);
+        }
 
         shader.bind();
 
         shader.mat4Load(shader.getUniformLocation("view"), viewMatrix);
         shader.mat4Load(shader.getUniformLocation("projection"), projectionMatrix);
 
-        player.draw(shader, gd.models, gd.meshes, gd.textures);
+        player.draw(shader, rd.models, rd.meshes, rd.textures);
 
         mat4::identity(modelMatrix);
         mat4::translate(modelMatrix, {0.0f, -0.25f, 0.0f});
@@ -139,24 +131,15 @@ void glengine::run() {
 
         shader.mat4Load(shader.getUniformLocation("model"), modelMatrix);
 
-        cube.draw(shader, gd.textures);
+        cube.draw(shader, rd.textures);
 
         shader.unbind();
 
         // Text rendering
-        sample.draw(gd.fonts, gd.textures, gd.shaders, dgl.textVAO, dgl.textVBO, ortho);
+        cF.draw(rd.fonts, rd.textures, rd.shaders, ortho);
+        cT.draw(rd.fonts, rd.textures, rd.shaders, ortho);
 
-        gltools::swapBuffers(dgl.window);
+        gltools::swapBuffers(eng.getWindow());
         gltools::pollEvents();
     }
-}
-
-void glengine::terminate() {
-
-    gd.clear();
-
-    glfwDestroyWindow(dgl.window);
-    glfwTerminate();
-
-    dgl.window = nullptr;
 }
