@@ -3,7 +3,6 @@
 
 #include "glmath.h"
 #include "gltime.h"
-#include "input.h"
 #include <GLFW/glfw3.h>
 
 class camerafirst {
@@ -26,7 +25,9 @@ public:
 
     void getMouseCursorPos(GLFWwindow* window, double& mX, double& mY);
     void update(mat4& view, gltime t);
-    void inputKeyboard(GLFWwindow* window, input in, gltime& t);
+    void setPosition(const vec3& position) { this->position = position; }
+    vec3 getFront() const { return front; }
+    vec3 getRight() const { return right; }
     void inputMouse(GLFWwindow* window, GLboolean constrainPitch = true);
 
 private:

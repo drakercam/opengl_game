@@ -5,7 +5,7 @@ player::player(vec3 position, size_t modelRef) {
     this->velocity = {0.0f, 0.0f, 0.0f};
     this->modelRef = modelRef;
     this->rotation = 0.0f;
-    this->speed = 1.5f;
+    this->speed = 4.0f;
     this->scale = 0.5f;
 }
 

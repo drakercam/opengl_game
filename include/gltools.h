@@ -15,6 +15,7 @@ namespace gltools {
     void setContextCurrent(GLFWwindow* window);
     bool loadGlad();
     void enable(int setting);
+    void disable(int setting);
     int maxNumberVertexAttr(void);
     void framebufferSizeCallback(GLFWwindow* window, int width, int height);
     void processInput(GLFWwindow* window);

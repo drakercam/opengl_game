@@ -27,6 +27,8 @@ void engine::initialize() {
     }
 
     gltools::enable(GL_DEPTH_TEST);
+    gltools::enable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glfwSetCursorPosCallback(window, gltools::mouseCallback);
 

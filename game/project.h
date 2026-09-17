@@ -1,13 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <freetype/freetype.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include "engine.h"
 
 #include "player.h"
+#include "weapon.h"
 
 class game {
 

@@ -17,6 +17,15 @@ void shader::setTextureUnitToSampler(std::string name, unsigned int value) const
     glUniform1i(getUniformLocation(name.c_str()), value);
 }
 
+void shader::setTexture(const buffer<texture>& textures, size_t textureRef, unsigned int textureUnit, const char* sampler) const {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+
+    textures.get(textureRef).bind();
+
+    glUniform1i(getUniformLocation(sampler), textureUnit);
+    setTextureUnitToSampler(sampler, textureUnit);
+}
+
 void shader::intLoad(int location, int value) const {
     glUniform1i(location, value);
 }
