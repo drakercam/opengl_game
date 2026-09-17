@@ -32,7 +32,7 @@ public:
     void getMouseCursorPos(GLFWwindow* window, double& mX, double& mY);
     void update(mat4& view, gltime t);
     void inputMouse(GLFWwindow* window, GLboolean constrainPitch = true);
-
+    vec3 getPosition(void) const { return position; }
     void setTarget(const vec3& target) {
         this->target = target;
     }

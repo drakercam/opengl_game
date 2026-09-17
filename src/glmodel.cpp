@@ -17,9 +17,9 @@ void model::load(const std::string path, buffer<mesh>& meshes, buffer<texture>& 
 }
 
 void model::draw(const shader& s, const buffer<mesh>& meshes, const buffer<texture>& textures) {
-
     for (size_t i = 0; i < meshRefs.size(); ++i) {
-        meshes.get(meshRefs.get(i)).draw(s, textures);
+        s.setTextures(textures, meshes.get(meshRefs.get(i)).getTextureRefs());
+        meshes.get(meshRefs.get(i)).draw(s);
     }
 }
 

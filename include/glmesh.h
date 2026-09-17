@@ -64,7 +64,9 @@ public:
         glDeleteVertexArrays(1, &this->VAO);
     }
 
-    void draw(const shader& s, const buffer<texture>& textures) const;
+    void draw(const shader& s) const;
+    void drawWireFrame(const shader& s) const;
+    const buffer<size_t>& getTextureRefs(void) const { return textureRefs; }
 
 private:
     GLuint VAO = 0;

@@ -16,6 +16,8 @@ class game {
         buffer<triangle> triangles;
         buffer<cube> cubes;
         buffer<rectangle> rectangles;
+        buffer<circle> circles;
+        buffer<sphere> spheres;
         buffer<font> fonts;
 
         void clear() {
@@ -26,6 +28,8 @@ class game {
             triangles.clear();
             cubes.clear();
             rectangles.clear();
+            circles.clear();
+            spheres.clear();
             fonts.clear();
         }
     };

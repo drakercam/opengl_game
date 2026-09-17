@@ -1,12 +1,18 @@
 #include "player.h"
 
-player::player(vec3 position, size_t modelRef) {
+player::player(vec3 position, size_t modelRef, size_t hitboxRef) {
     this->position = position;
     this->velocity = {0.0f, 0.0f, 0.0f};
     this->modelRef = modelRef;
+    this->hitboxRef = hitboxRef;
     this->rotation = 0.0f;
     this->speed = 4.0f;
     this->scale = 0.5f;
+
+    this->bounds = {
+        {-0.25f, 0.0f, -0.25f},
+        { 0.25f, 1.0f,  0.25f}
+    };
 }
 
 void player::update(GLFWwindow* window, input& in, gltime& time, const vec3& cameraFront, const vec3& cameraRight) {
@@ -64,6 +70,23 @@ void player::draw(shader& s, buffer<model>& models, buffer<mesh>& meshes, buffer
     s.mat4Load(s.getUniformLocation("model"), modelMatrix);
 
     models.get(this->modelRef).draw(s, meshes, textures);
+}
+
+void player::drawBounds(shader& s, cube& cube) {
+    aabb box = this->getBounds();
+
+    vec3 center = (box.min + box.max) * 0.5f;
+    vec3 size = box.max - box.min;
+
+    mat4 modelMatrix;
+    mat4::identity(modelMatrix);
+    mat4::translate(modelMatrix, center);
+    mat4::scale(modelMatrix, size);
+
+    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
+    s.vec3Load(s.getUniformLocation("inColor"), {1.0f, 0.0f, 0.0f});
+
+    cube.drawWireFrame(s);
 }
 
 vec3 player::getPosition() const {

@@ -2,15 +2,18 @@
 #include "glbuffer.h"
 #include "glshader.h"
 
-void mesh::draw(const shader& s, const buffer<texture>& textures) const {
+void mesh::draw(const shader& s) const {
+    glBindVertexArray(this->VAO);
+    glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, nullptr);
+    glBindVertexArray(0);
+}
 
-    // std::cout << "DRAW mesh VAO=" << VAO << '\n';
-
-    s.setTextures(textures, this->textureRefs);
+void mesh::drawWireFrame(const shader& s) const {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 
-    texture::active(GL_TEXTURE0);       // set back to defaults once configured
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
