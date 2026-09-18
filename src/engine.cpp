@@ -49,5 +49,7 @@ void engine::terminate() {
     glfwDestroyWindow(window);
     glfwTerminate();
 
+    FT_Done_FreeType(ft);
+
     window = nullptr;
 }

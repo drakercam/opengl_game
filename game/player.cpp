@@ -10,9 +10,14 @@ player::player(vec3 position, size_t modelRef, size_t hitboxRef) {
     this->scale = 0.5f;
 
     this->bounds = {
-        {-0.25f, 0.0f, -0.25f},
-        { 0.25f, 1.0f,  0.25f}
+        {-0.15f, 0.0f, -0.15f},
+        { 0.15f, 0.65f,  0.15f}
     };
+
+    this->shootRay.origin = position + vec3{0.0f, 0.8f, 0.0f};
+    this->shootRay.direction = {0.0f, 0.0f, -1.0f};
+
+    this->colliding = false;
 }
 
 void player::update(GLFWwindow* window, input& in, gltime& time, const vec3& cameraFront, const vec3& cameraRight) {
@@ -51,14 +56,17 @@ void player::update(GLFWwindow* window, input& in, gltime& time, const vec3& cam
         this->velocity.y = jumpVelocity;
     }
 
-        // Vertical movement.
-        this->position.y += this->velocity.y * delta;
+    // Vertical movement.
+    this->position.y += this->velocity.y * delta;
 
-        // Floor collision.
-        if (this->position.y < 0.0f) {
-            this->position.y = 0.0f;
-            this->velocity.y = 0.0f;
-        }
+    // Floor collision.
+    if (this->position.y < 0.0f) {
+        this->position.y = 0.0f;
+        this->velocity.y = 0.0f;
+    }
+
+    this->shootRay.origin = position + vec3{0.0f, 0.8f, 0.0f};
+    this->shootRay.direction = vec3::normalize(cameraFront);
 }
 
 void player::draw(shader& s, buffer<model>& models, buffer<mesh>& meshes, buffer<texture>& textures) {
@@ -95,4 +103,59 @@ vec3 player::getPosition() const {
 
 size_t player::getModelRef() const {
     return this->modelRef;
+}
+
+enemy::enemy(vec3 position, size_t sphereRef, size_t hitboxRef) {
+    this->position = position;
+    this->velocity = {0.0f, 0.0f, 0.0f};
+    this->sphereRef = sphereRef;
+    this->hitboxRef = hitboxRef;
+    this->rotation = 0.0f;
+    this->speed = 4.0f;
+    this->scale = 1.0f;
+
+    this->bounds = {
+        {-0.5f, -0.5f, -0.5f},
+        { 0.5f, 0.5f,  0.5f}
+    };
+    this->hit = false;
+}
+
+void enemy::draw(shader& s, buffer<sphere>& spheres) {
+    auto& sphere = spheres.get(this->sphereRef);
+
+    // draw enemy
+    mat4 modelMatrix;
+    mat4::identity(modelMatrix);
+    mat4::translate(modelMatrix, this->position);
+    mat4::scale(modelMatrix, {this->scale, this->scale, this->scale});
+
+    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
+
+    sphere.draw(s);
+}
+
+void enemy::drawBounds(shader& s, cube& cube) {
+    aabb box = this->getBounds();
+
+    vec3 center = (box.min + box.max) * 0.5f;
+    vec3 size = box.max - box.min;
+
+    mat4 modelMatrix;
+    mat4::identity(modelMatrix);
+    mat4::translate(modelMatrix, center);
+    mat4::scale(modelMatrix, size);
+
+    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
+    s.vec3Load(s.getUniformLocation("inColor"), {1.0f, 0.0f, 0.0f});
+
+    cube.drawWireFrame(s);
+}
+
+vec3 enemy::getPosition() const {
+    return this->position;
+}
+
+size_t enemy::getSphereRef() const {
+    return this->sphereRef;
 }

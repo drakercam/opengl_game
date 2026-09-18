@@ -19,6 +19,7 @@ class game {
         buffer<circle> circles;
         buffer<sphere> spheres;
         buffer<font> fonts;
+        buffer<text> texts;
 
         void clear() {
             meshes.clear();

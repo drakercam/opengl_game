@@ -1,12 +1,13 @@
 #include "text.h"
+#include "gltools.h"
 
 void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, const buffer<shader>& shaders, const mat4& projection) {
 
     const auto& font = fonts.get(this->fontRef);
     const auto& shader = shaders.get(font.shaderRef);
 
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
+    gltools::disable(GL_DEPTH_TEST);
+    gltools::enable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     shader.bind();
@@ -14,8 +15,7 @@ void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, cons
     texture::active(GL_TEXTURE0);
     shader.intLoad(shader.getUniformLocation("text"), 0);
     shader.mat4Load(shader.getUniformLocation("projection"), projection);
-    shader.vec3Load(
-    shader.getUniformLocation("textColor"), {1.0f, 1.0f, 1.0f});
+    shader.vec3Load(shader.getUniformLocation("textColor"), {1.0f, 1.0f, 1.0f});
 
     glBindVertexArray(font.VAO);
 
@@ -72,8 +72,8 @@ void text::draw(const buffer<font>& fonts, const buffer<texture>& textures, cons
         x += (ch.advance >> 6) * scale;
     }
 
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
+    gltools::disable(GL_BLEND);
+    gltools::enable(GL_DEPTH_TEST);
 
     glBindVertexArray(0);
     shader.unbind();

@@ -14,8 +14,8 @@ void texture::load() {
 
     // std::cout << "texture: parameters 1\n";
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // std::cout << "texture: parameters 2\n";
 
@@ -100,13 +100,13 @@ void texture::loadGlyph(const unsigned char* data, int width, int height) {
     glTexParameteri(
         GL_TEXTURE_2D,
         GL_TEXTURE_MIN_FILTER,
-        GL_LINEAR
+        GL_NEAREST
     );
 
     glTexParameteri(
         GL_TEXTURE_2D,
         GL_TEXTURE_MAG_FILTER,
-        GL_LINEAR
+        GL_NEAREST
     );
 
     glBindTexture(GL_TEXTURE_2D, 0);

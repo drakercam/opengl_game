@@ -8,6 +8,7 @@
 #include "gltexture.h"
 #include "glshader.h"
 
+#include <cstring>
 #include <string>
 #include <cstddef>
 
