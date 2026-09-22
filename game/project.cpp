@@ -89,9 +89,13 @@ void game::update(gltime& time) {
 }
 
 void game::run() {
-    vec3 cameraPosition{0.0f, 0.0f, 2.0f};
-    vec3 camera2Offset{0.0f, 0.8f, 0.0f};
-    vec3 cameraTarget{0.0f, 0.5f, 0.0f};
+    vec3 playerPosition{0.0f, 0.0f, 0.0f};
+    float playerX{0.0f};
+    float playerY{0.0f};
+
+    vec3 cameraPosition{0.0f, 0.75f, -5.0f};
+    float camera2Offset{1.5f};
+    vec3 cameraTarget{0.0f, playerPosition.y + camera2Offset, 0.0f};
     vec3 up{0.0f, 1.0f, 0.0f};
     vec3 cameraDirection{vec3::normalize(cameraPosition - cameraTarget)};
 
@@ -110,7 +114,7 @@ void game::run() {
     gltime time;
     input in;
 
-    player player{{0.0f, 0.0f, 0.0f}, 0, 1};
+    player player{playerPosition, 0, 1};
     enemy enemy{{2.0f, 0.5f, 2.0f}, 1, 2};
 
     auto& shader = rd.shaders.get(0);
@@ -172,7 +176,7 @@ void game::run() {
             }
 
             camera2.inputMouse(eng.getWindow());
-            camera2.setPosition(player.getPosition() + camera2Offset);
+            camera2.setPosition({player.getPosition().x, player.getPosition().y + camera2Offset, player.getPosition().z});
             camera2.update(viewMatrix, time);
         }
         else if (camMode == CAMERA_MODE::THIRD_PERSON) {

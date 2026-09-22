@@ -2,6 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <print>
 
+#define PITCH_MIN -60.0f
+#define PITCH_MAX 0.0f
+
 void camerathird::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
 
     glfwGetCursorPos(window, &mX, &mY);
@@ -19,25 +22,13 @@ void camerathird::update(mat4& view, gltime t) {
     this->right = vec3::normalize(vec3::cross(this->front, this->worldUp));
     this->up = vec3::normalize(vec3::cross(this->right, this->front));
 
-    vec3 horizontalFront{this->front.x, 0.0f, this->front.z};
-    horizontalFront = vec3::normalize(horizontalFront);
-
-    vec3 shoulderRight = vec3::normalize(vec3::cross(horizontalFront, this->worldUp));
-
-    float distance = 2.0f;
-    float xOffset = -1.0f;
-    float aimDistance = 2.0f;
-    float heightOffset = -0.5f;
-
+    float distance = 4.0f;
     vec3 playerPosition = this->target;
-    vec3 cameraOffset = horizontalFront * distance + shoulderRight * xOffset + this->worldUp * heightOffset;
 
-    this->position = playerPosition - cameraOffset;
-
-    vec3 lookTarget = playerPosition + this->front * distance;
+    this->position = playerPosition - this->front * distance;
 
     mat4::identity(view);
-    mat4::lookAt(view, this->position, lookTarget, this->worldUp);
+    mat4::lookAt(view, this->position, playerPosition, this->worldUp);
 }
 
 void camerathird::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
@@ -66,11 +57,12 @@ void camerathird::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
     this->yaw += xOffset;
     this->pitch += yOffset;
 
-    const float pitchLimit = ops::degreesToRadians(89.0f);
+    const float pitchMin = ops::degreesToRadians(PITCH_MIN);
+    const float pitchMax = ops::degreesToRadians(PITCH_MAX);
 
     if (constrainPitch) {
 
-        if (this->pitch > pitchLimit) this->pitch = pitchLimit;
-        if (this->pitch < -pitchLimit) this->pitch = -30.0f;
+        if (this->pitch > pitchMax) this->pitch = pitchMax;
+        if (this->pitch < pitchMin) this->pitch = pitchMin;
     }
 }
