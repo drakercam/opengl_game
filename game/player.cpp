@@ -1,12 +1,24 @@
 #include "player.h"
+#include "glshader.h"
 
-player::player(vec3 position, size_t modelRef) {
+player::player(vec3 position, size_t modelRef, size_t hitboxRef) {
     this->position = position;
     this->velocity = {0.0f, 0.0f, 0.0f};
     this->modelRef = modelRef;
+    this->hitboxRef = hitboxRef;
     this->rotation = 0.0f;
     this->speed = 4.0f;
     this->scale = 0.5f;
+
+    this->bounds = {
+        {-0.15f, 0.0f, -0.15f},
+        { 0.15f, 0.65f,  0.15f}
+    };
+
+    this->shootRay.origin = position + vec3{0.0f, 0.8f, 0.0f};
+    this->shootRay.direction = {0.0f, 0.0f, -1.0f};
+
+    this->colliding = false;
 }
 
 void player::update(GLFWwindow* window, input& in, gltime& time, const vec3& cameraFront, const vec3& cameraRight) {
@@ -45,25 +57,47 @@ void player::update(GLFWwindow* window, input& in, gltime& time, const vec3& cam
         this->velocity.y = jumpVelocity;
     }
 
-        // Vertical movement.
-        this->position.y += this->velocity.y * delta;
+    // Vertical movement.
+    this->position.y += this->velocity.y * delta;
 
-        // Floor collision.
-        if (this->position.y < 0.0f) {
-            this->position.y = 0.0f;
-            this->velocity.y = 0.0f;
-        }
+    // Floor collision.
+    if (this->position.y < 0.0f) {
+        this->position.y = 0.0f;
+        this->velocity.y = 0.0f;
+    }
+
+    this->shootRay.origin = position + vec3{0.0f, 0.8f, 0.0f};
+    this->shootRay.direction = vec3::normalize(cameraFront);
 }
 
-void player::draw(shader& s, buffer<model>& models, buffer<mesh>& meshes, buffer<texture>& textures) {
+void player::draw(const shader& s, std::vector<model>& models, std::vector<mesh>& meshes, std::vector<texture>& textures) {
     mat4 modelMatrix;
     mat4::identity(modelMatrix);
     mat4::translate(modelMatrix, this->position);
     mat4::rotate(modelMatrix, ops::degreesToRadians(this->rotation), {0.0f, 1.0f, 0.0f});
     mat4::scale(modelMatrix, {this->scale, this->scale, this->scale});
-    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
 
-    models.get(this->modelRef).draw(s, meshes, textures);
+    modelDraw(models.at(this->modelRef), s, std::span(meshes), std::span(textures));
+}
+
+void player::drawBounds(shader& s, mesh& cube) {
+    shaderBind(s);
+    aabb box = this->getBounds();
+
+    vec3 center = (box.min + box.max) * 0.5f;
+    vec3 size = box.max - box.min;
+
+    mat4 modelMatrix;
+    mat4::identity(modelMatrix);
+    mat4::translate(modelMatrix, center);
+    mat4::scale(modelMatrix, size);
+
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
+    shaderVec3Load(s, shaderGetUniformLocation(s, "inColor"), {1.0f, 0.0f, 0.0f});
+
+    meshDrawWireFrame(cube);
+    shaderUnbind();
 }
 
 vec3 player::getPosition() const {
@@ -72,4 +106,64 @@ vec3 player::getPosition() const {
 
 size_t player::getModelRef() const {
     return this->modelRef;
+}
+
+enemy::enemy(vec3 position, size_t sphereRef, size_t hitboxRef) {
+    this->position = position;
+    this->velocity = {0.0f, 0.0f, 0.0f};
+    this->sphereRef = sphereRef;
+    this->hitboxRef = hitboxRef;
+    this->rotation = 0.0f;
+    this->speed = 4.0f;
+    this->scale = 1.0f;
+
+    this->bounds = {
+        {-0.5f, -0.5f, -0.5f},
+        { 0.5f, 0.5f,  0.5f}
+    };
+    this->hit = false;
+}
+
+void enemy::draw(shader& s, std::vector<mesh>& spheres) {
+    auto& sphere = spheres.at(this->sphereRef);
+
+    shaderBind(s);
+
+    // draw enemy
+    mat4 modelMatrix;
+    mat4::identity(modelMatrix);
+    mat4::translate(modelMatrix, this->position);
+    mat4::scale(modelMatrix, {this->scale, this->scale, this->scale});
+
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
+
+    meshDraw(sphere);
+    shaderUnbind();
+}
+
+void enemy::drawBounds(shader& s, mesh& cube) {
+    shaderBind(s);
+    aabb box = this->getBounds();
+
+    vec3 center = (box.min + box.max) * 0.5f;
+    vec3 size = box.max - box.min;
+
+    mat4 modelMatrix;
+    mat4::identity(modelMatrix);
+    mat4::translate(modelMatrix, center);
+    mat4::scale(modelMatrix, size);
+
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
+    shaderVec3Load(s, shaderGetUniformLocation(s, "inColor"), {1.0f, 0.0f, 0.0f});
+
+    meshDrawWireFrame(cube);
+    shaderUnbind();
+}
+
+vec3 enemy::getPosition() const {
+    return this->position;
+}
+
+size_t enemy::getSphereRef() const {
+    return this->sphereRef;
 }

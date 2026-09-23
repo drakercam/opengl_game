@@ -9,23 +9,18 @@
 class game {
 
     struct renderData {
-        buffer<mesh> meshes;
-        buffer<shader> shaders;
-        buffer<texture> textures;
-        buffer<model> models;
-        buffer<triangle> triangles;
-        buffer<cube> cubes;
-        buffer<rectangle> rectangles;
-        buffer<font> fonts;
+        std::vector<mesh> meshes;
+        std::vector<shader> shaders;
+        std::vector<texture> textures;
+        std::vector<model> models;
+        std::vector<font> fonts;
+        std::vector<text> texts;
 
         void clear() {
             meshes.clear();
             shaders.clear();
             textures.clear();
             models.clear();
-            triangles.clear();
-            cubes.clear();
-            rectangles.clear();
             fonts.clear();
         }
     };

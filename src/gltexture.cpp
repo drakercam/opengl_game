@@ -1,11 +1,12 @@
 #include "gltexture.h"
+#include <GL/gl.h>
 
-void texture::load() {
-    glGenTextures(1, &this->id);
+void textureLoad(texture& texture, const char* imagePath) {
+    glGenTextures(1, &texture.id);
 
     // std::cout << "texture: generated " << this->id << '\n';
 
-    glBindTexture(GL_TEXTURE_2D, this->id);
+    glBindTexture(GL_TEXTURE_2D, texture.id);
 
     // std::cout << "texture: bound\n";
 
@@ -14,20 +15,22 @@ void texture::load() {
 
     // std::cout << "texture: parameters 1\n";
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // std::cout << "texture: parameters 2\n";
+
+    texture.path = imagePath;
 
     int width, height, numColourChannels;
 
     stbi_set_flip_vertically_on_load(true);
 
     unsigned char* data =
-    stbi_load(this->path.c_str(), &width, &height, &numColourChannels, 4);
+    stbi_load(texture.path.c_str(), &width, &height, &numColourChannels, 4);
 
     std::cout
-    << "Texture: " << path
+    << "Texture: " << texture.path
     << " width=" << width
     << " height=" << height
     << " channels=" << numColourChannels
@@ -56,7 +59,7 @@ void texture::load() {
     }
     else {
         std::cout << "Failed to load texture: "
-        << path << '\n';
+        << texture.path << '\n';
 
         std::cout << "Reason: "
         << stbi_failure_reason()
@@ -68,10 +71,10 @@ void texture::load() {
     stbi_image_free(data);
 }
 
-void texture::loadGlyph(const unsigned char* data, int width, int height) {
-    glGenTextures(1, &this->id);
+void textureLoadGlyph(texture& texture, const unsigned char* data, int width, int height) {
+    glGenTextures(1, &texture.id);
 
-    glBindTexture(GL_TEXTURE_2D, this->id);
+    glBindTexture(GL_TEXTURE_2D, texture.id);
 
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -100,28 +103,26 @@ void texture::loadGlyph(const unsigned char* data, int width, int height) {
     glTexParameteri(
         GL_TEXTURE_2D,
         GL_TEXTURE_MIN_FILTER,
-        GL_LINEAR
+        GL_NEAREST
     );
 
     glTexParameteri(
         GL_TEXTURE_2D,
         GL_TEXTURE_MAG_FILTER,
-        GL_LINEAR
+        GL_NEAREST
     );
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void texture::active(int textureUnit) {
+void textureActive(int textureUnit) {
     glActiveTexture(textureUnit);
 }
 
-void texture::bind(void) const {
-
-    glBindTexture(GL_TEXTURE_2D, this->id);
+void textureBind(const texture& texture) {
+    glBindTexture(GL_TEXTURE_2D, texture.id);
 }
 
-void texture::unbind(void) const {
-
+void textureUnbind(void) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -527,12 +527,108 @@ struct quat {
 
 };
 
+
+struct aabb {
+    vec3 min;
+    vec3 max;
+
+    static bool isColliding(const aabb a, const aabb b) {
+        return a.min.x <= b.max.x && a.max.x >= b.min.x &&
+               a.min.y <= b.max.y && a.max.y >= b.min.y &&
+               a.min.z <= b.max.z && a.max.z >= b.min.z;
+    }
+};
+
 struct ray {
     vec3 origin;
     vec3 direction;
 
     static vec3 pointAt(const ray& r, float t) {
         return r.origin + r.direction * t;
+    }
+
+    static bool aabbIntersect(const ray& r, const aabb& box, float& hitDistance) {
+        float tMin = 0.0f;
+        float tMax = std::numeric_limits<float>::infinity();
+
+        // X
+        if (r.direction.x != 0.0f) {
+
+            float t1 =
+            (box.min.x - r.origin.x) / r.direction.x;
+
+            float t2 =
+            (box.max.x - r.origin.x) / r.direction.x;
+
+            if (t1 > t2)
+                std::swap(t1, t2);
+
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
+
+            if (tMin > tMax)
+                return false;
+        }
+        else {
+
+            if (r.origin.x < box.min.x ||
+                r.origin.x > box.max.x)
+                return false;
+        }
+
+        // Y
+        if (r.direction.y != 0.0f) {
+
+            float t1 =
+            (box.min.y - r.origin.y) / r.direction.y;
+
+            float t2 =
+            (box.max.y - r.origin.y) / r.direction.y;
+
+            if (t1 > t2)
+                std::swap(t1, t2);
+
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
+
+            if (tMin > tMax)
+                return false;
+        }
+        else {
+
+            if (r.origin.y < box.min.y ||
+                r.origin.y > box.max.y)
+                return false;
+        }
+
+        // Z
+        if (r.direction.z != 0.0f) {
+
+            float t1 =
+            (box.min.z - r.origin.z) / r.direction.z;
+
+            float t2 =
+            (box.max.z - r.origin.z) / r.direction.z;
+
+            if (t1 > t2)
+                std::swap(t1, t2);
+
+            tMin = std::max(tMin, t1);
+            tMax = std::min(tMax, t2);
+
+            if (tMin > tMax)
+                return false;
+        }
+        else {
+
+            if (r.origin.z < box.min.z ||
+                r.origin.z > box.max.z)
+                return false;
+        }
+
+        hitDistance = tMin;
+
+        return true;
     }
 
     static bool sphereIntersect(ray& r, const vec3& sphereCenter, float sphereRadius, float& hitDistance) {
@@ -581,5 +677,4 @@ struct ray {
         return false;   // return false if we did not
     }
 };
-
 #endif

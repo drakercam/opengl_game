@@ -25,14 +25,12 @@ public:
         this->speed = 0.05f;
         this->rotationSpeed = 1.5f;
         this->mouseSensitivity = 0.003f;
-
-        this->distance = 5.0f;
     }
 
     void getMouseCursorPos(GLFWwindow* window, double& mX, double& mY);
     void update(mat4& view, gltime t);
     void inputMouse(GLFWwindow* window, GLboolean constrainPitch = true);
-
+    vec3 getPosition(void) const { return position; }
     void setTarget(const vec3& target) {
         this->target = target;
     }
@@ -47,7 +45,6 @@ public:
 private:
     vec3 position;
     vec3 target;    // target position
-    float distance; // distance to target
     vec3 direction;
     vec3 front;
     vec3 right;

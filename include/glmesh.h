@@ -1,13 +1,12 @@
 #ifndef GLMESH_H
 #define GLMESH_H
 
-#include "glshader.h"
-#include <cstddef>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <vector>
+#include <span>
 
 #include "glbuffer.h"
-#include "gltexture.h"
 
 #define MAX_BONE_INFLUENCE 4
 
@@ -29,51 +28,29 @@ struct vertex {
     }
 };
 
-class mesh {
+struct meshData {
+    std::vector<vertex> vertices;
+    std::vector<unsigned int> indices;
+};
 
-public:
-    mesh(const std::vector<vertex>& v, const std::vector<unsigned int>& i, const std::vector<size_t>& t = {}) {
-
-        this->vertices.setElementsData(v);
-        this->indices.setElementsData(i);
-        this->textureRefs.setElementsData(t);
-
-        // setup mesh
-        glGenVertexArrays(1, &this->VAO);
-        glBindVertexArray(this->VAO);
-
-        VBO.upload(this->vertices.getElementsData(), this->vertices.size() * sizeof(vertex), GL_STATIC_DRAW);
-        EBO.upload(this->indices.getElementsData(), sizeof(unsigned int) * this->indices.size(), GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, pos));
-        glEnableVertexAttribArray(0);
-        // color attribute
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, normal));
-        glEnableVertexAttribArray(1);
-        // uv attribute
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex, uv));
-        glEnableVertexAttribArray(2);
-
-        glBindVertexArray(0);
-
-        std::cout << "CREATE mesh VAO=" << VAO << '\n';
-    }
-
-    ~mesh() {
-        std::cout << "DESTROY mesh VAO=" << VAO << '\n';
-        glDeleteVertexArrays(1, &this->VAO);
-    }
-
-    void draw(const shader& s, const buffer<texture>& textures) const;
-
-private:
+struct mesh {
     GLuint VAO = 0;
-    buffer<vertex> vertices;
-    buffer<GLuint> indices;
-    buffer<size_t> textureRefs;
+    unsigned int indexCount = 0;
+
     bufferGPU VBO{GL_ARRAY_BUFFER};
     bufferGPU EBO{GL_ELEMENT_ARRAY_BUFFER};
-
 };
+
+void meshLoad(mesh& mesh, std::span<const vertex> vertices, std::span<const unsigned int> indices);
+void meshLoad(mesh& mesh, const meshData& data);
+void meshFree(mesh& mesh);
+void meshDraw(const mesh& mesh);
+void meshDrawWireFrame(const mesh& mesh);
+
+meshData triangleMake(void);
+meshData rectangleMake(void);
+meshData circleMake(size_t segments = 32);
+meshData cubeMake(void);
+meshData sphereMake(size_t segments = 32, size_t rings = 16);
 
 #endif

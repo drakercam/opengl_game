@@ -2,6 +2,7 @@
 #define WEAPON_H
 
 #include "engine.h"
+#include "glshader.h"
 
 struct weapon {
     size_t textureRef;
@@ -16,12 +17,12 @@ struct weapon {
         this->scale = scale;
     }
 
-    void draw(const shader& shader, const buffer<rectangle>& rectangles, const buffer<texture>& textures) {
-        auto& quad = rectangles.get(quadRef);
+    void draw(const shader& shader, const std::vector<mesh>& rectangles, const std::vector<texture>& textures) {
+        auto& quad = rectangles.at(quadRef);
 
-        shader.setTexture(textures, this->textureRef, 0, "tex");
+        shaderSetTexture(shader, textures, this->textureRef, 0, "tex");
 
-        quad.draw(shader);
+        meshDraw(quad);
     }
 };
 

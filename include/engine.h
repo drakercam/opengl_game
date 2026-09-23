@@ -19,7 +19,6 @@
 #include "gltime.h"
 #include "glcamerafirst.h"
 #include "glcamerathird.h"
-#include "glprimitives.h"
 #include "glmodel.h"
 #include "text.h"
 
