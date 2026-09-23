@@ -5,39 +5,30 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "glshader.h"
-#include "glbuffer.h"
+#include <cstddef>
+#include <span>
+#include <string>
+#include <utility>
+#include <vector>
 #include "glmesh.h"
+#include "glshader.h"
+#include "gltexture.h"
 
-class model {
-
-public:
-    model(const std::string path, buffer<mesh>& meshes, buffer<texture>& textures) {
-        load(path, meshes, textures);
-        std::cout << "Model meshes: " << meshRefs.size() << '\n';
-
-        for (size_t i = 0; i < meshRefs.size(); ++i) {
-            std::cout
-            << "  meshRef[" << i << "] = "
-            << meshRefs.get(i)
-            << '\n';
-        }
-    }
-
-    void draw(const shader& s, const buffer<mesh>& meshes, const buffer<texture>& textures);
-
-    size_t meshCount() const {
-        return meshRefs.size();
-    }
-
-private:
-    buffer<size_t> meshRefs;
-    std::string directory;
-
-    void load(const std::string path, buffer<mesh>& meshes, buffer<texture>& textures);
-    void processNode(aiNode* node, const aiScene* scene, buffer<mesh>& meshes, buffer<texture>& textures);
-    void processMesh(aiMesh* m, const aiScene* scene, buffer<mesh>& meshes, buffer<texture>& textures);
-    std::vector<size_t> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, buffer<texture>& textures);
+struct modelMesh {
+    size_t meshRef = 0;
+    std::vector<size_t> textureRefs;
 };
+
+struct model {
+    std::vector<modelMesh> meshes;
+    std::string directory;
+};
+
+void modelLoad(model& model, const std::string path, std::vector<mesh>& meshes, std::vector<texture>& textures);
+void modelDraw(const model& model, const shader& shader, std::span<const mesh> meshes, std::span<const texture> textures);
+size_t modelMeshCount(model& model);
+void modelProcessNode(model& model, aiNode* node, const aiScene* scene, std::vector<mesh>& meshes, std::vector<texture>& textures);
+modelMesh modelProcessMesh(model& model, aiMesh* m, const aiScene* scene, std::vector<mesh>& meshes, std::vector<texture>& textures);
+std::vector<size_t> modelLoadMaterialTextures(model& model, aiMaterial* mat, aiTextureType type, const std::string& typeName, std::vector<texture>& textures);
 
 #endif

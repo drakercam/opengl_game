@@ -1,56 +1,105 @@
 #include "glshader.h"
 #include "glbuffer.h"
 
-void shader::bind() const {
-    glUseProgram(this->id);
+void shaderLoad(shader& shader, const char* vertexShaderSource, const char* fragShaderSource) {
+    // -- Vertex Shader --
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    int  success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if(!success){
+
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // -- Fragment Shader --
+    unsigned int fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragShader, 1, &fragShaderSource, NULL);
+    glCompileShader(fragShader);
+
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+    if(!success){
+
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // -- Shader linking --
+    shader.id = glCreateProgram();
+    glAttachShader(shader.id, vertexShader);
+    glAttachShader(shader.id, fragShader);
+    glLinkProgram(shader.id);
+
+    glGetProgramiv(shader.id, GL_LINK_STATUS, &success);
+    if (!success){
+
+        glGetProgramInfoLog(shader.id, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // -- cleanup --
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragShader);
 }
 
-void shader::unbind(void) const {
+void shaderFree(shader& shader) {
+    glDeleteProgram(shader.id);
+}
+
+void shaderBind(const shader& shader) {
+    glUseProgram(shader.id);
+}
+
+void shaderUnbind(void) {
     glUseProgram(0);
 }
 
-int shader::getUniformLocation(const char* name) const {
-    return glGetUniformLocation(this->id, name);
+int shaderGetUniformLocation(const shader& shader, const char* name) {
+    return glGetUniformLocation(shader.id, name);
 }
 
-void shader::setTextureUnitToSampler(std::string name, unsigned int value) const {
-    glUniform1i(getUniformLocation(name.c_str()), value);
+void shaderSetTextureUnitToSampler(const shader& shader, std::string name, unsigned int value) {
+    glUniform1i(shaderGetUniformLocation(shader, name.c_str()), value);
 }
 
-void shader::setTexture(const buffer<texture>& textures, size_t textureRef, unsigned int textureUnit, const char* sampler) const {
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-
-    textures.get(textureRef).bind();
-
-    glUniform1i(getUniformLocation(sampler), textureUnit);
-    setTextureUnitToSampler(sampler, textureUnit);
-}
-
-void shader::intLoad(int location, int value) const {
+void shaderIntLoad(const shader& shader, int location, int value) {
     glUniform1i(location, value);
 }
 
-void shader::floatLoad(int location, float value) const {
+void shaderFloatLoad(const shader& shader, int location, float value) {
     glUniform1f(location, value);
 }
 
-void shader::vec2Load(int location, vec2 value) const {
+void shaderVec2Load(const shader& shader, int location, vec2 value) {
     glUniform2f(location, value.x, value.y);
 }
 
-void shader::vec3Load(int location, vec3 value) const {
+void shaderVec3Load(const shader& shader, int location, vec3 value) {
     glUniform3f(location, value.x, value.y, value.z);
 }
 
-void shader::mat3Load(int location, mat3 value) const {
+void shaderMat3Load(const shader& shader, int location, mat3 value) {
     glUniformMatrix3fv(location, 1, GL_FALSE, value.m);
 }
 
-void shader::mat4Load(int location, mat4 value) const {
+void shaderMat4Load(const shader& shader, int location, mat4 value) {
     glUniformMatrix4fv(location, 1, GL_FALSE, value.m);
 }
 
-void shader::setTextures(const buffer<texture>& textures, const buffer<size_t>& textureRefs) const {
+void shaderSetTexture(const shader& shader, const std::vector<texture>& textures, size_t textureRef, unsigned int textureUnit, const char* sampler) {
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
+
+    textureBind(textures.at(textureRef));
+
+    glUniform1i(shaderGetUniformLocation(shader, sampler), textureUnit);
+    shaderSetTextureUnitToSampler(shader, sampler, textureUnit);
+}
+
+void shaderSetTextures(const shader& shader, std::span<const texture> textures, std::span<const size_t> textureRefs) {
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
     unsigned int normalNr   = 1;
@@ -58,17 +107,17 @@ void shader::setTextures(const buffer<texture>& textures, const buffer<size_t>& 
 
     for (unsigned int i = 0; i < textureRefs.size(); ++i) {
 
-        auto& textureReference = textureRefs.get(i);
+        auto& textureReference = textureRefs[i];
         glActiveTexture(GL_TEXTURE0 + i);
         std::string number;
-        std::string name = textures.get(textureReference).getName();
+        std::string name = textures[textureReference].name;
 
         if      (name == "texture_diffuse")     number = std::to_string(diffuseNr++);
         else if (name == "texture_specular")    number = std::to_string(specularNr++);
         else if (name == "texture_normal")      number = std::to_string(normalNr++);
         else if (name == "texture_height")      number = std::to_string(heightNr++);
 
-        shader::setTextureUnitToSampler(std::string("material." + name + number).c_str(), i);
-        textures.get(textureReference).bind();
+        shaderSetTextureUnitToSampler(shader, std::string("material." + name + number).c_str(), i);
+        textureBind(textures[textureReference]);
     }
 }

@@ -5,40 +5,16 @@
 #include <stb_image.h>
 #include <glad/glad.h>
 
-class texture {
-public:
-    texture(const char* imagePath) {
-        this->path = imagePath;
-        load();
-    }
-
-    texture(const unsigned char* data, int width, int height) {
-        loadGlyph(data, width, height);
-    }
-
-    static void active(int textureUnit);
-    void bind(void) const;
-    void unbind(void) const;
-
-    const std::string getName() const {
-        return name;
-    }
-
-    const std::string getPath() const {
-        return path;
-    }
-
-    void setName(const std::string& name) {
-        this->name = name;
-    }
-
-private:
+struct texture {
     GLuint id;
     std::string name;
     std::string path;
-
-    void load();
-    void loadGlyph(const unsigned char* data, int width, int height);
 };
+
+void textureLoad(texture& texture, const char* imagePath);
+void textureLoadGlyph(texture& texture, const unsigned char* data, int width, int height);
+void textureActive(int textureUnit);
+void textureBind(const texture& texture);
+void textureUnbind(void);
 
 #endif

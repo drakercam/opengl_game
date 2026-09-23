@@ -14,8 +14,8 @@ public:
     player(vec3 position, size_t modelRef, size_t hitboxRef);
 
     void update(GLFWwindow* window, input& in, gltime& time, const vec3& cameraFront, const vec3& cameraRight);
-    void draw(shader& s, buffer<model>& models, buffer<mesh>& meshes, buffer<texture>& textures);
-    void drawBounds(shader& s, cube& cube);
+    void draw(const shader& s, std::vector<model>& models, std::vector<mesh>& meshes, std::vector<texture>& textures);
+    void drawBounds(shader& s, mesh& cube);
 
     vec3 getPosition() const;
     void setPosition(const vec3& p) { this->position = p; }
@@ -59,8 +59,8 @@ public:
     enemy(vec3 position, size_t sphereRef, size_t hitboxRef);
 
     //void update(GLFWwindow* window, input& in, gltime& time, const vec3& cameraFront, const vec3& cameraRight);
-    void draw(shader& s, buffer<sphere>& spheres);
-    void drawBounds(shader& s, cube& cube);
+    void draw(shader& s, std::vector<mesh>& spheres);
+    void drawBounds(shader& s, mesh& cube);
 
     vec3 getPosition() const;
     size_t getSphereRef() const;

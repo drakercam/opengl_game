@@ -1,4 +1,5 @@
 #include "player.h"
+#include "glshader.h"
 
 player::player(vec3 position, size_t modelRef, size_t hitboxRef) {
     this->position = position;
@@ -69,18 +70,19 @@ void player::update(GLFWwindow* window, input& in, gltime& time, const vec3& cam
     this->shootRay.direction = vec3::normalize(cameraFront);
 }
 
-void player::draw(shader& s, buffer<model>& models, buffer<mesh>& meshes, buffer<texture>& textures) {
+void player::draw(const shader& s, std::vector<model>& models, std::vector<mesh>& meshes, std::vector<texture>& textures) {
     mat4 modelMatrix;
     mat4::identity(modelMatrix);
     mat4::translate(modelMatrix, this->position);
     mat4::rotate(modelMatrix, ops::degreesToRadians(this->rotation), {0.0f, 1.0f, 0.0f});
     mat4::scale(modelMatrix, {this->scale, this->scale, this->scale});
-    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
 
-    models.get(this->modelRef).draw(s, meshes, textures);
+    modelDraw(models.at(this->modelRef), s, std::span(meshes), std::span(textures));
 }
 
-void player::drawBounds(shader& s, cube& cube) {
+void player::drawBounds(shader& s, mesh& cube) {
+    shaderBind(s);
     aabb box = this->getBounds();
 
     vec3 center = (box.min + box.max) * 0.5f;
@@ -91,10 +93,11 @@ void player::drawBounds(shader& s, cube& cube) {
     mat4::translate(modelMatrix, center);
     mat4::scale(modelMatrix, size);
 
-    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
-    s.vec3Load(s.getUniformLocation("inColor"), {1.0f, 0.0f, 0.0f});
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
+    shaderVec3Load(s, shaderGetUniformLocation(s, "inColor"), {1.0f, 0.0f, 0.0f});
 
-    cube.drawWireFrame(s);
+    meshDrawWireFrame(cube);
+    shaderUnbind();
 }
 
 vec3 player::getPosition() const {
@@ -121,8 +124,10 @@ enemy::enemy(vec3 position, size_t sphereRef, size_t hitboxRef) {
     this->hit = false;
 }
 
-void enemy::draw(shader& s, buffer<sphere>& spheres) {
-    auto& sphere = spheres.get(this->sphereRef);
+void enemy::draw(shader& s, std::vector<mesh>& spheres) {
+    auto& sphere = spheres.at(this->sphereRef);
+
+    shaderBind(s);
 
     // draw enemy
     mat4 modelMatrix;
@@ -130,12 +135,14 @@ void enemy::draw(shader& s, buffer<sphere>& spheres) {
     mat4::translate(modelMatrix, this->position);
     mat4::scale(modelMatrix, {this->scale, this->scale, this->scale});
 
-    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
 
-    sphere.draw(s);
+    meshDraw(sphere);
+    shaderUnbind();
 }
 
-void enemy::drawBounds(shader& s, cube& cube) {
+void enemy::drawBounds(shader& s, mesh& cube) {
+    shaderBind(s);
     aabb box = this->getBounds();
 
     vec3 center = (box.min + box.max) * 0.5f;
@@ -146,10 +153,11 @@ void enemy::drawBounds(shader& s, cube& cube) {
     mat4::translate(modelMatrix, center);
     mat4::scale(modelMatrix, size);
 
-    s.mat4Load(s.getUniformLocation("model"), modelMatrix);
-    s.vec3Load(s.getUniformLocation("inColor"), {1.0f, 0.0f, 0.0f});
+    shaderMat4Load(s, shaderGetUniformLocation(s, "model"), modelMatrix);
+    shaderVec3Load(s, shaderGetUniformLocation(s, "inColor"), {1.0f, 0.0f, 0.0f});
 
-    cube.drawWireFrame(s);
+    meshDrawWireFrame(cube);
+    shaderUnbind();
 }
 
 vec3 enemy::getPosition() const {

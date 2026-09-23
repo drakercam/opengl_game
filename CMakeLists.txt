@@ -51,7 +51,6 @@ add_executable(${PROJECT_NAME}
     src/glcamerafirst.cpp
     src/glcamerathird.cpp
     src/glmesh.cpp
-    src/glprimitives.cpp
     src/gltime.cpp
     src/glshader.cpp
     src/gltools.cpp
