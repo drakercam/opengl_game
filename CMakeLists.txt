@@ -33,7 +33,7 @@ option(ENABLE_SANITIZERS "Enable AddressSanitizer and UBSan" OFF)
 # ---------------------------------------------------------
 
 find_package(OpenGL REQUIRED)
-find_package(glfw3 REQUIRED)
+find_package(SDL3 REQUIRED CONFIG)
 find_package(assimp REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -56,15 +56,14 @@ add_executable(${PROJECT_NAME}
     src/gltools.cpp
     src/gltexture.cpp
     src/glmodel.cpp
-    src/input.cpp
     src/text.cpp
     src/engine.cpp
 
     game/player.cpp
-    game/project.cpp
+    game/enemy.cpp
+    game/game.cpp
     game/main.cpp
 
-    thirdparty/glad/src/glad.c
     thirdparty/stb_image/stb_image_definition.cpp
 )
 
@@ -76,7 +75,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     src
     include
     game
-    thirdparty/glad/include
     thirdparty/stb_image
     ${LUA_INCLUDE_DIRS}
 )
@@ -86,8 +84,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # ---------------------------------------------------------
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+    SDL3::SDL3
     OpenGL::GL
-    glfw
     assimp::assimp
     Freetype::Freetype
     ${LUA_LIBRARIES}

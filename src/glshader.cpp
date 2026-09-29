@@ -90,10 +90,10 @@ void shaderMat4Load(const shader& shader, int location, mat4 value) {
     glUniformMatrix4fv(location, 1, GL_FALSE, value.m);
 }
 
-void shaderSetTexture(const shader& shader, const std::vector<texture>& textures, size_t textureRef, unsigned int textureUnit, const char* sampler) {
+void shaderSetTexture(const shader& shader, const std::span<const texture> textures, size_t textureRef, unsigned int textureUnit, const char* sampler) {
     glActiveTexture(GL_TEXTURE0 + textureUnit);
 
-    textureBind(textures.at(textureRef));
+    textureBind(textures[textureRef]);
 
     glUniform1i(shaderGetUniformLocation(shader, sampler), textureUnit);
     shaderSetTextureUnitToSampler(shader, sampler, textureUnit);

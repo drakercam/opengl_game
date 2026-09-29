@@ -36,7 +36,7 @@ void modelProcessNode(model& model, aiNode* node, const aiScene* scene, std::vec
         << " vertices=" << mesh->mNumVertices
         << " faces=" << mesh->mNumFaces
         << '\n';
-
+		
         model.meshes.push_back(modelProcessMesh(model, mesh, scene, meshes, textures));
     }
 

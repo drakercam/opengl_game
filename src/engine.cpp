@@ -1,36 +1,19 @@
 #include "engine.h"
 
 void engine::initialize() {
-    if (!gltools::loadGLFW()) {
-        std::cout << "Failed to load glfw" << std::endl;
-        terminate();
-        return;
-    }
+    setVersionGL(3, 3);
 
-    gltools::setVersion(3, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = gltools::createWindow(1366, 768, "untitled");
+    window = createWindow(1366, 768, "untitled");
     if (!window){
-
-        std::cout << "Failed to create glfw window" << std::endl;
         terminate();
         return;
     }
 
-    gltools::setContextCurrent(window);
+    setContextCurrent(window);
 
-    if (!gltools::loadGlad()) {
-        std::cout << "Couldn't load opengl::glad" << std::endl;
-        terminate();
-        return;
-    }
-
-    gltools::enable(GL_DEPTH_TEST);
-    gltools::enable(GL_BLEND);
+    enableGL(GL_DEPTH_TEST);
+    enableGL(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glfwSetCursorPosCallback(window, gltools::mouseCallback);
 
     const GLubyte* renderer = glGetString(GL_RENDERER);
     const GLubyte* vendor = glGetString(GL_VENDOR);
@@ -42,14 +25,17 @@ void engine::initialize() {
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
     }
 
-    gltools::setInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    setMouseCapture(window, true);
 }
 
 void engine::terminate() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    FT_Done_FreeType(ft);
-
-    window = nullptr;
+	if (ft) {
+		FT_Done_FreeType(ft);
+		ft = nullptr;
+	}
+    
+    if (window) {
+		SDL_DestroyWindow(window);
+		window = nullptr;
+	}
 }

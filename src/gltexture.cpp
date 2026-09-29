@@ -1,5 +1,4 @@
 #include "gltexture.h"
-#include <GL/gl.h>
 
 void textureLoad(texture& texture, const char* imagePath) {
     glGenTextures(1, &texture.id);
@@ -26,30 +25,17 @@ void textureLoad(texture& texture, const char* imagePath) {
 
     stbi_set_flip_vertically_on_load(true);
 
+	std::cout << "before stbi load" << std::endl;
+
     unsigned char* data =
     stbi_load(texture.path.c_str(), &width, &height, &numColourChannels, 4);
-
-    std::cout
-    << "Texture: " << texture.path
-    << " width=" << width
-    << " height=" << height
-    << " channels=" << numColourChannels
-    << '\n';
+    
+    std::cout << "after stbi load" << std::endl;
 
     if (data) {
         // std::cout << "texture: uploading\n";
 
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA,
-            width,
-            height,
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            data
-        );
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
         // std::cout << "texture: uploaded\n";
 
@@ -58,12 +44,9 @@ void textureLoad(texture& texture, const char* imagePath) {
         // std::cout << "texture: mipmaps generated\n";
     }
     else {
-        std::cout << "Failed to load texture: "
-        << texture.path << '\n';
+        std::cout << "Failed to load texture: "<< texture.path << std::endl;
 
-        std::cout << "Reason: "
-        << stbi_failure_reason()
-        << '\n';
+        std::cout << "Reason: " << stbi_failure_reason() << std::endl;
 
         return;
     }
@@ -76,41 +59,15 @@ void textureLoadGlyph(texture& texture, const unsigned char* data, int width, in
 
     glBindTexture(GL_TEXTURE_2D, texture.id);
 
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RED,
-        width,
-        height,
-        0,
-        GL_RED,
-        GL_UNSIGNED_BYTE,
-        data
-    );
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
 
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_WRAP_S,
-        GL_CLAMP_TO_EDGE
-    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_WRAP_T,
-        GL_CLAMP_TO_EDGE
-    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_MIN_FILTER,
-        GL_NEAREST
-    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_MAG_FILTER,
-        GL_NEAREST
-    );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
