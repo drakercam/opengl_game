@@ -21,6 +21,11 @@ struct vec2 {
         this->y = y;
     }
 
+    vec2(float v) {
+        this->x = v;
+        this->y = v;
+    }
+
     vec2 operator+(vec2& other) {
         return {this->x + other.x, this->y + other.y};
     }
@@ -96,6 +101,12 @@ struct vec3 {
         this->x = x;
         this->y = y;
         this->z = z;
+    }
+
+    vec3(float v) {
+        this->x = v;
+        this->y = v;
+        this->z = v;
     }
 
     vec3(const vec3& v) {
@@ -201,6 +212,13 @@ struct vec4 {
         this->y = 0;
         this->z = 0;
         this->w = 1.0f;
+    }
+
+    vec4(float v) {
+        this->x = v;
+        this->y = v;
+        this->z = v;
+        this->w = v;
     }
 
     vec4(float x, float y, float z) {

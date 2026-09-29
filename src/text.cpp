@@ -92,8 +92,8 @@ void textDraw(const text& text, const std::span<const font> fonts, const std::sp
     const auto& font = fonts[text.fontRef];
     const auto& shader = shaders[font.shaderRef];
 
-    gltools::disable(GL_DEPTH_TEST);
-    gltools::enable(GL_BLEND);
+    disableGL(GL_DEPTH_TEST);
+    enableGL(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     shaderBind(shader);
@@ -158,8 +158,8 @@ void textDraw(const text& text, const std::span<const font> fonts, const std::sp
         x += (ch.advance >> 6) * text.scale;
     }
 
-    gltools::disable(GL_BLEND);
-    gltools::enable(GL_DEPTH_TEST);
+    disableGL(GL_BLEND);
+    enableGL(GL_DEPTH_TEST);
 
     glBindVertexArray(0);
     shaderUnbind();

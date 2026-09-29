@@ -3,7 +3,8 @@
 
 #include "glmath.h"
 #include "gltime.h"
-#include <GLFW/glfw3.h>
+#include "gltools.h"
+#include <SDL3/SDL.h>
 
 class camerafirst {
 
@@ -20,16 +21,16 @@ public:
         this->pitch = 0.0f;
         this->speed = 0.05f;
         this->rotationSpeed = 1.5f;
-        this->mouseSensitivity = 0.003f;
+        this->mouseSensitivity = 0.001f;
     }
 
-    void getMouseCursorPos(GLFWwindow* window, double& mX, double& mY);
+    void getMouseCursorPos(SDL_Window* window, double& mX, double& mY);
     void update(mat4& view, gltime t);
     void setPosition(const vec3& position) { this->position = position; }
     vec3 getPosition(void) const { return position; }
     vec3 getFront() const { return front; }
     vec3 getRight() const { return right; }
-    void inputMouse(GLFWwindow* window, GLboolean constrainPitch = true);
+    void inputMouse(GLboolean constrainPitch = true);
 
 private:
     vec3 position;

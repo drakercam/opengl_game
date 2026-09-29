@@ -14,6 +14,7 @@
 #include "gltexture.h"
 #include "glshader.h"
 #include "gltools.h"
+#include "glapi.h"
 
 struct glyph {
 

@@ -17,6 +17,7 @@ out/
 .cmake/
 .kateproject.build
 web_build.txt
+opengl_game.geany
 
 # OS/editor junk
 .DS_Store

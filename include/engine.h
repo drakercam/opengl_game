@@ -3,8 +3,8 @@
 
 
 #include <freetype/freetype.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glapi.h"
+#include <SDL3/SDL.h>
 #include <iostream>
 
 // ENGINE TOOLING
@@ -29,11 +29,11 @@ public:
     void initialize();
     void terminate();
 
-    GLFWwindow* getWindow(void) const { return window; }
+    SDL_Window* getWindow(void) const { return window; }
     FT_Library& getFTLibrary(void) { return ft; }
 
 private:
-    GLFWwindow* window{nullptr};
+    SDL_Window* window{nullptr};
     FT_Library ft{nullptr};
 
 };

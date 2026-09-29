@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <stb_image.h>
-#include <glad/glad.h>
+#include "glapi.h"
 
 struct texture {
     GLuint id;

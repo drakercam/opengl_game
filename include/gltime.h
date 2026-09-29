@@ -1,21 +1,26 @@
 #ifndef GLTIME_H
 #define GLTIME_H
 
-#include <GLFW/glfw3.h>
+#include <cstdint>
 
-class gltime {
-
-    public:
-        void update(void);
-
-        const float getDelta() const { return delta; }
-        const float getLast() const { return last; }
-        const float getTotal() const { return total; }
-
-    private:
-        float last = 0.0f;
-        float delta = 0.0f;
-        float total = 0.0f;
+struct gltime {
+	double last = 0.0;
+	double delta = 0.0;
+	double total = 0.0;
 };
+
+void gltimeUpdate(gltime& t);
+
+struct gltimer {
+	double duration = 0.0;
+	double elapsed = 0.0;
+	bool active = false;
+	bool repeat = false;
+};
+
+void gltimerStart(gltimer& t, double duration, bool repeat);
+void gltimerStop(gltimer& t);
+void gltimerReset(gltimer& t);
+bool gltimerUpdate(gltimer& t, double delta);
 
 #endif

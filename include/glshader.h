@@ -3,8 +3,7 @@
 
 #include <span>
 #include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glapi.h"
 #include "glmath.h"
 #include "gltexture.h"
 #include "glbuffer.h"
@@ -26,7 +25,7 @@ void shaderVec3Load(const shader& shader, int location, vec3 value);
 void shaderMat3Load(const shader& shader, int location, mat3 value);
 void shaderMat4Load(const shader& shader, int location, mat4 value);
 
-void shaderSetTexture(const shader& shader, const std::vector<texture>& textures, size_t textureRef, unsigned int textureUnit, const char* sampler);
+void shaderSetTexture(const shader& shader, const std::span<const texture> textures, size_t textureRef, unsigned int textureUnit, const char* sampler);
 void shaderSetTextures(const shader& shader, std::span<const texture> textures, std::span<const size_t> textureRefs);
 
 #endif

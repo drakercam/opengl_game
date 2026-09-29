@@ -1,14 +1,8 @@
 #include "glcamerathird.h"
-#include <GLFW/glfw3.h>
 #include <print>
 
 #define PITCH_MIN -60.0f
 #define PITCH_MAX 0.0f
-
-void camerathird::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
-
-    glfwGetCursorPos(window, &mX, &mY);
-}
 
 void camerathird::update(mat4& view, gltime t) {
 
@@ -31,25 +25,10 @@ void camerathird::update(mat4& view, gltime t) {
     mat4::lookAt(view, this->position, playerPosition, this->worldUp);
 }
 
-void camerathird::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
+void camerathird::inputMouse(GLboolean constrainPitch) {
 
-    double mouseX, mouseY;
-
-    camerathird::getMouseCursorPos(window, mouseX, mouseY);
-
-    if (this->firstMouse) {
-
-        this->lastMouseX = mouseX;
-        this->lastMouseY = mouseY;
-        this->firstMouse = false;
-        return;
-    }
-
-    float xOffset = mouseX - this->lastMouseX;
-    float yOffset = this->lastMouseY - mouseY;
-
-    this->lastMouseX = mouseX;
-    this->lastMouseY = mouseY;
+    float xOffset = getMouseDeltaX();
+    float yOffset = -getMouseDeltaY();
 
     xOffset *= this->mouseSensitivity;
     yOffset *= this->mouseSensitivity;

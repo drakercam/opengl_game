@@ -1,10 +1,4 @@
 #include "glcamerafirst.h"
-#include <GLFW/glfw3.h>
-
-void camerafirst::getMouseCursorPos(GLFWwindow* window, double& mX, double& mY) {
-
-    glfwGetCursorPos(window, &mX, &mY);
-}
 
 void camerafirst::update(mat4& view, gltime t) {
     this->front.x = cos(this->pitch) *  sin(this->yaw);
@@ -23,25 +17,10 @@ void camerafirst::update(mat4& view, gltime t) {
     );
 }
 
-void camerafirst::inputMouse(GLFWwindow* window, GLboolean constrainPitch) {
+void camerafirst::inputMouse(GLboolean constrainPitch) {
 
-    double mouseX, mouseY;
-
-    camerafirst::getMouseCursorPos(window, mouseX, mouseY);
-
-    if (this->firstMouse) {
-
-        this->lastMouseX = mouseX;
-        this->lastMouseY = mouseY;
-        this->firstMouse = false;
-        return;
-    }
-
-    float xOffset = mouseX - this->lastMouseX;
-    float yOffset = this->lastMouseY - mouseY;
-
-    this->lastMouseX = mouseX;
-    this->lastMouseY = mouseY;
+    float xOffset = getMouseDeltaX();
+    float yOffset = -getMouseDeltaY();
 
     xOffset *= this->mouseSensitivity;
     yOffset *= this->mouseSensitivity;

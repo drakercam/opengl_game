@@ -6,8 +6,8 @@
 
 #include "glmath.h"
 #include "gltime.h"
-#include "input.h"
-#include <GLFW/glfw3.h>
+#include "gltools.h"
+#include <SDL3/SDL.h>
 
 class camerathird {
 
@@ -24,12 +24,11 @@ public:
         this->pitch = 0.0f;
         this->speed = 0.05f;
         this->rotationSpeed = 1.5f;
-        this->mouseSensitivity = 0.003f;
+        this->mouseSensitivity = 0.001f;
     }
 
-    void getMouseCursorPos(GLFWwindow* window, double& mX, double& mY);
     void update(mat4& view, gltime t);
-    void inputMouse(GLFWwindow* window, GLboolean constrainPitch = true);
+    void inputMouse(GLboolean constrainPitch = true);
     vec3 getPosition(void) const { return position; }
     void setTarget(const vec3& target) {
         this->target = target;

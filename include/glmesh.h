@@ -1,8 +1,8 @@
 #ifndef GLMESH_H
 #define GLMESH_H
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glapi.h"
+#include <SDL3/SDL.h>
 #include <vector>
 #include <span>
 
