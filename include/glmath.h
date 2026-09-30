@@ -2,6 +2,7 @@
 #define GL_MATH_H
 
 #include <cmath>
+#include <algorithm>
 
 #define PI 3.14159265358979323846f
 #define MAT3_SIZE 9

@@ -26,23 +26,28 @@ void game::init() {
     shader basicShader1, weaponShader, basicShader2, textShader, basicShader3;
     shaderLoad(basicShader1,
                file::read("../shaders/basic_vertex1.glsl").c_str(),
-               file::read("../shaders/basic_frag1.glsl").c_str()
+               file::read("../shaders/basic_frag1.glsl").c_str(),
+               "basicShader1"
     );
     shaderLoad(weaponShader,
                file::read("../shaders/weapon_vertex.glsl").c_str(),
-               file::read("../shaders/weapon_frag.glsl").c_str()
+               file::read("../shaders/weapon_frag.glsl").c_str(),
+               "weaponShader"
     );
     shaderLoad(basicShader2,
                file::read("../shaders/basic_vertex2.glsl").c_str(),
-               file::read("../shaders/basic_frag2.glsl").c_str()
+               file::read("../shaders/basic_frag2.glsl").c_str(),
+               "basicShader2"
     );
     shaderLoad(textShader,
                file::read("../shaders/text_vertex.glsl").c_str(),
-               file::read("../shaders/text_frag.glsl").c_str()
+               file::read("../shaders/text_frag.glsl").c_str(),
+               "textShader"
     );
     shaderLoad(basicShader3,
                file::read("../shaders/basic_vertex3.glsl").c_str(),
-               file::read("../shaders/basic_frag3.glsl").c_str()
+               file::read("../shaders/basic_frag3.glsl").c_str(),
+               "basicShader3"
     );
 
     renderdata.shaders.push_back(basicShader1);
@@ -132,35 +137,35 @@ void game::update() {
 	// Player + Camera + Collision Checks/Updates
 	if (camMode == CAMERA_MODE::FIRST_PERSON) {
 
-		vec3 oldPlayerPosition = player.getPosition();
-		player.update(time, camFirstPerson.getFront(), camFirstPerson.getRight());
-		if (aabb::isColliding(player.getBounds(), enemy.getBounds())) {
-			player.setPosition(oldPlayerPosition);
+		vec3 oldPlayerPosition = playerState.getPosition();
+		playerState.update(time, camFirstPerson.getFront(), camFirstPerson.getRight());
+		if (aabb::isColliding(playerState.getBounds(), enemyState.getBounds())) {
+			playerState.setPosition(oldPlayerPosition);
 		}
 
 		camFirstPerson.inputMouse();
-		camFirstPerson.setPosition({player.getPosition().x, player.getPosition().y + cameraOffset, player.getPosition().z});
+		camFirstPerson.setPosition({playerState.getPosition().x, playerState.getPosition().y + cameraOffset, playerState.getPosition().z});
 		camFirstPerson.update(viewMatrix, time);
 	}
 	else if (camMode == CAMERA_MODE::THIRD_PERSON) {
 
-		vec3 oldPlayerPosition = player.getPosition();
-		player.update(time, camThirdPerson.getFront(), camThirdPerson.getRight());
-		if (aabb::isColliding(player.getBounds(), enemy.getBounds())) {
-			player.setPosition(oldPlayerPosition);
+		vec3 oldPlayerPosition = playerState.getPosition();
+		playerState.update(time, camThirdPerson.getFront(), camThirdPerson.getRight());
+		if (aabb::isColliding(playerState.getBounds(), enemyState.getBounds())) {
+			playerState.setPosition(oldPlayerPosition);
 		}
 
 		camThirdPerson.inputMouse();
-		camThirdPerson.setTarget(player.getPosition() + (vec3){0.0f, 0.5f, 0.0f});
+		camThirdPerson.setTarget(playerState.getPosition() + (vec3){0.0f, 0.5f, 0.0f});
 		camThirdPerson.update(viewMatrix, time);
 	}
 	
 	// Shooting -- if C is pressed and the enemy has not been tagged
-	if (IsKeyPressed(SDL_SCANCODE_C) && !enemy.isHit()) {
+	if (IsKeyPressed(SDL_SCANCODE_C) && !enemyState.isHit()) {
 		float hitDistancePlayerEnemy;
-		if (ray::aabbIntersect(player.getRay(), enemy.getBounds(), hitDistancePlayerEnemy)) {
+		if (ray::aabbIntersect(playerState.getRay(), enemyState.getBounds(), hitDistancePlayerEnemy)) {
 			std::cout << "enemy hit" << std::endl;
-			enemy.setHit(true);
+			enemyState.setHit(true);
 		}
 	}
 }
@@ -218,7 +223,7 @@ void game::render() {
 	enableGL(GL_CULL_FACE);
 
 	if (camMode == CAMERA_MODE::THIRD_PERSON) {
-		player.draw(shader, renderdata.models, renderdata.meshes, renderdata.textures);
+		playerState.draw(shader, renderdata.models, renderdata.meshes, renderdata.textures);
 	}
 
 	mat4::identity(modelMatrix);
@@ -239,14 +244,18 @@ void game::render() {
 	shaderMat4Load(staticShader, shaderGetUniformLocation(staticShader, "projection"), projectionMatrix);
 
 	// if the enemy is hit, turn it red, else its green
-	if (enemy.isHit()) {
+	if (enemyState.isHit()) {
 		shaderVec3Load(staticShader, shaderGetUniformLocation(staticShader, "inColor"), {1.0f, 0.0f, 0.0f});
 	}
 	else {
 		shaderVec3Load(staticShader, shaderGetUniformLocation(staticShader, "inColor"), {0.0f, 1.0f, 0.0f});
 	}
 
-	enemy.draw(staticShader, renderdata.meshes);
+	disableGL(GL_CULL_FACE);
+
+	enemyState.draw(staticShader, renderdata.meshes);
+
+	enableGL(GL_CULL_FACE);
 
 	shaderUnbind();
 
@@ -258,8 +267,8 @@ void game::render() {
 		shaderMat4Load(staticShader, shaderGetUniformLocation(staticShader, "view"), viewMatrix);
 		shaderMat4Load(staticShader, shaderGetUniformLocation(staticShader, "projection"), projectionMatrix);
 
-		player.drawBounds(staticShader, playerHitbox);
-		enemy.drawBounds(staticShader, enemyHitbox);
+		playerState.drawBounds(staticShader, playerHitbox);
+		enemyState.drawBounds(staticShader, enemyHitbox);
 
 		shaderUnbind();
 	}

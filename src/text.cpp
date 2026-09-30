@@ -39,8 +39,6 @@ void fontLoad(font& font, const std::string filepath, size_t shaderRef, FT_Libra
 
     FT_Set_Pixel_Sizes(face, 0, 48);
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
     for (unsigned char c = 0; c < 128; ++c) {
 
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
@@ -58,7 +56,12 @@ void fontLoad(font& font, const std::string filepath, size_t shaderRef, FT_Libra
         size_t textureRef = textures.size();
 
         texture textureData;
+        
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        
         textureLoadGlyph(textureData, glyph->bitmap.buffer, glyph->bitmap.width, glyph->bitmap.rows);
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
         textures.push_back(textureData);
 

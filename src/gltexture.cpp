@@ -59,7 +59,35 @@ void textureLoadGlyph(texture& texture, const unsigned char* data, int width, in
 
     glBindTexture(GL_TEXTURE_2D, texture.id);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    #ifdef __EMSCRIPTEN__
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_R8,
+		width,
+		height,
+		0,
+		GL_RED,
+		GL_UNSIGNED_BYTE,
+		data
+	);
+
+	#else
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RED,
+		width,
+		height,
+		0,
+		GL_RED,
+		GL_UNSIGNED_BYTE,
+		data
+	);
+
+	#endif
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 

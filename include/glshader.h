@@ -12,7 +12,8 @@ struct shader {
     GLuint id;
 };
 
-void shaderLoad(shader& shader, const char* vertexShaderSource, const char* fragShaderSource);
+
+void shaderLoad(shader& shader, const char* vertexShaderSource, const char* fragShaderSource, const char* name);
 void shaderFree(shader& shader);
 void shaderBind(const shader& shader);
 void shaderUnbind(void);

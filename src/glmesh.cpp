@@ -44,11 +44,15 @@ void meshDraw(const mesh& mesh) {
 }
 
 void meshDrawWireFrame(const mesh& mesh) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	#ifndef __EMSCRIPTEN__
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	#endif
 
-    meshDraw(mesh);
+	meshDraw(mesh);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	#ifndef __EMSCRIPTEN__
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	#endif
 }
 
 meshData triangleMake(void) {

@@ -1,10 +1,58 @@
 #include "glshader.h"
-#include "glbuffer.h"
 
-void shaderLoad(shader& shader, const char* vertexShaderSource, const char* fragShaderSource) {
+static std::string shaderPrepareSource(const char* source, bool fragment) {
+
+    std::string shaderSource = source;
+
+#ifdef __EMSCRIPTEN__
+
+    size_t versionStart = shaderSource.find("#version");
+    size_t versionEnd = shaderSource.find('\n', versionStart);
+
+    if (versionStart != std::string::npos) {
+
+        shaderSource.replace(
+            versionStart,
+            versionEnd - versionStart,
+            "#version 300 es"
+        );
+
+    }
+
+    if (fragment) {
+
+        size_t insertPosition = shaderSource.find('\n');
+
+        shaderSource.insert(
+            insertPosition + 1,
+            "precision mediump float;\n"
+        );
+
+    }
+
+#endif
+
+    return shaderSource;
+}
+
+void shaderLoad(shader& shader, const char* vertexShaderSource, const char* fragShaderSource, const char* name) {
+    std::string vertexSource = shaderPrepareSource(vertexShaderSource, false);
+    std::string fragSource = shaderPrepareSource(fragShaderSource, true);
+    
+    std::cout << "COMPILING SHADER: " << name << std::endl;
+    
+    #ifdef __EMSCRIPTEN__
+    std::cout << "----- VERTEX SHADER -----\n";
+    std::cout << vertexSource << '\n';
+
+    std::cout << "----- FRAGMENT SHADER -----\n";
+    std::cout << fragSource << '\n';
+	#endif
+    
     // -- Vertex Shader --
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    const char* vertexSourcePtr = vertexSource.c_str();
+    glShaderSource(vertexShader, 1, &vertexSourcePtr, NULL);
     glCompileShader(vertexShader);
 
     int  success;
@@ -18,13 +66,14 @@ void shaderLoad(shader& shader, const char* vertexShaderSource, const char* frag
 
     // -- Fragment Shader --
     unsigned int fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragShader, 1, &fragShaderSource, NULL);
+    const char* fragSourcePtr = fragSource.c_str();
+    glShaderSource(fragShader, 1, &fragSourcePtr, NULL);
     glCompileShader(fragShader);
 
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
     if(!success){
 
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        glGetShaderInfoLog(fragShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 

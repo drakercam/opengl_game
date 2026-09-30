@@ -1,11 +1,19 @@
 BUILD_DIR := build
+WEB_BUILD_DIR := build-web
+
 TARGET := untitled
 TARGET_GPU := DRI_PRIME=1
 
 CMAKE := cmake
 GENERATOR := Ninja
 
-.PHONY: all configure build run debug sanitize clean rebuild
+.PHONY: all configure build run debug sanitize clean rebuild \
+        web-configure web web-run web-clean web-rebuild
+
+
+# =========================================================
+# NATIVE
+# =========================================================
 
 all: build
 
@@ -36,9 +44,42 @@ clean:
 
 rebuild: clean configure build
 
-#make configure    # first setup / change configuration
-#make              # normal incremental build
-#make run          # build + run
-#make debug        # build + GDB
-#make sanitize     # reconfigure with ASan/UBSan + build
-#make rebuild      # wipe + configure + build
+
+# =========================================================
+# WEB / EMSCRIPTEN
+# =========================================================
+
+web-configure:
+	emcmake $(CMAKE) -S . -B $(WEB_BUILD_DIR) \
+		-G $(GENERATOR) \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-DENABLE_SANITIZERS=OFF
+
+web:
+	$(CMAKE) --build $(WEB_BUILD_DIR)
+
+web-run: web
+	emrun $(WEB_BUILD_DIR)/$(TARGET).html
+
+web-clean:
+	rm -rf $(WEB_BUILD_DIR)
+
+web-rebuild: web-clean web-configure web
+
+
+# =========================================================
+# USAGE
+# =========================================================
+
+# make configure
+# make
+# make run
+# make debug
+# make sanitize
+# make rebuild
+#
+# make web-configure
+# make web
+# make web-run
+# make web-rebuild
+# make web-clean

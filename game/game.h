@@ -58,8 +58,8 @@ private:
     // Player + Enemy + Weapons
     vec3 playerPosition{0.0f};
     vec3 enemyPosition{2.0f, 0.5f, 2.0f};
-    player player{playerPosition, 0, 1};
-    enemy enemy{enemyPosition, 6, 2};
+    player playerState{playerPosition, 0, 1};
+    enemy enemyState{enemyPosition, 6, 2};
     weapon pistol{1, 0, {1000.0f, 250.0f}, {732.0f, 500.0f}};
     weapon shotgun{2, 0, {1000.0f, 250.0f}, {732.0f, 500.0f}};
     
